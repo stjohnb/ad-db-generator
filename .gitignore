@@ -1,0 +1,10 @@
+target/
+project/target/
+.vscode
+.metals
+.bloop
+.bsp
+project/metals.sbt
+project/project
+*.log
+src/it/resources/zk-single-kafka-single
