@@ -1,15 +1,7 @@
-# ad-db-generator
+# TODO
 
-An example application built from the [ce3.g8 template](https://github.com/typelevel/ce3.g8).
+Generate particular entities:
+    Domain admins group
+    krgbtgt users
 
-## Run application
-
-```shell
-sbt run
-```
-
-## Run tests
-
-```shell
-sbt test
-```
+Diff snapshots & group changes

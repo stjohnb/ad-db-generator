@@ -1,4 +1,4 @@
-package net.bstjohn.ad.generator.format
+package net.bstjohn.ad.generator.snapshots
 
 import net.bstjohn.ad.generator.format.groups.Groups
 import net.bstjohn.ad.generator.format.users.Users

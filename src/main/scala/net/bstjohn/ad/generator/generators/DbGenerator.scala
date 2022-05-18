@@ -1,9 +1,10 @@
 package net.bstjohn.ad.generator.generators
 
-import net.bstjohn.ad.generator.format.DbSnapshot
 import net.bstjohn.ad.generator.format.groups.{GroupMember, Groups}
 import net.bstjohn.ad.generator.format.users.Users
 import net.bstjohn.ad.generator.generators.MetaGenerator.generateMeta
+import net.bstjohn.ad.generator.snapshots
+import net.bstjohn.ad.generator.snapshots.DbSnapshot
 
 object DbGenerator {
   def generateNestedGroupsDb(): DbSnapshot = {
@@ -18,7 +19,7 @@ object DbGenerator {
         :+ GroupMember.fromGroup(group1)
     )
 
-    DbSnapshot(
+    snapshots.DbSnapshot(
       users = Users(
         users1 ++ users2,
         meta = generateMeta()
