@@ -1,7 +1,7 @@
-package net.bstjohn.ad.generator.format
+package net.bstjohn.ad.generator.format.common
 
-import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import io.circe.{Decoder, Encoder}
 
 case class Meta(
   methods: Int,

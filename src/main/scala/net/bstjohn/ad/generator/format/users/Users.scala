@@ -1,10 +1,11 @@
-package net.bstjohn.ad.generator.format
+package net.bstjohn.ad.generator.format.users
 
-import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import io.circe.{Decoder, Encoder}
+import net.bstjohn.ad.generator.format.common.Meta
 
 case class Users(
-  data: List[User],
+  data: Iterable[User],
   meta: Meta
 )
 

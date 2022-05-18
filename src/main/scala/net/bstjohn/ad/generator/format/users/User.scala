@@ -1,8 +1,8 @@
-package net.bstjohn.ad.generator.format
+package net.bstjohn.ad.generator.format.users
 
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder, Json, JsonObject}
-import io.circe.generic.auto._
+import net.bstjohn.ad.generator.format.common.Ace
 
 case class User(
   AllowedToDelegate: List[Json],
