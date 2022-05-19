@@ -17,7 +17,7 @@ object GroupDiff {
   ) extends GroupDiff
 
   def from(s1: DbSnapshot, s2: DbSnapshot): Iterable[GroupDiff] = {
-    val createdOrUpdarted = s2.groups.data.flatMap { updated =>
+    val createdOrUpdated = s2.groups.data.flatMap { updated =>
       s1.groups.data.find(g => g.ObjectIdentifier == updated.ObjectIdentifier) match {
         case Some(previous) if previous != updated =>
           Some(GroupUpdated(previous, updated))
@@ -37,6 +37,6 @@ object GroupDiff {
       }
     }
 
-    createdOrUpdarted ++ deleted
+    createdOrUpdated ++ deleted
   }
 }
