@@ -13,7 +13,7 @@ case class User(
   ObjectIdentifier: String,
   IsDeleted: Boolean,
   IsACLProtected: Boolean,
-  Properties: JsonObject,
+  Properties: UserProperties,
 )
 
 object User {

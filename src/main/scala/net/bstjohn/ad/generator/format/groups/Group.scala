@@ -1,7 +1,7 @@
 package net.bstjohn.ad.generator.format.groups
 
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
-import io.circe.{Decoder, Encoder, JsonObject}
+import io.circe.{Decoder, Encoder}
 import net.bstjohn.ad.generator.format.common.Ace
 
 case class Group(
@@ -10,7 +10,7 @@ case class Group(
   ObjectIdentifier: String,
   IsDeleted: Boolean,
   IsACLProtected: Boolean,
-  Properties: JsonObject,
+  Properties: GroupProperties,
 )
 
 object Group {

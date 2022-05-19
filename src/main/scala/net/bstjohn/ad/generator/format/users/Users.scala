@@ -11,6 +11,6 @@ case class Users(
 
 object Users {
   implicit val UsersDecoder: Decoder[Users] = deriveDecoder[Users]
-  implicit val UsersEncoder: Encoder[Users] = deriveEncoder[Users]
+  implicit val UsersEncoder: Encoder[Users] = deriveEncoder[Users].mapJson(_.deepDropNullValues)
 
 }

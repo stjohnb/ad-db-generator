@@ -2,17 +2,21 @@ package net.bstjohn.ad.generator.generators
 
 import io.circe.JsonObject
 
+import java.util.UUID
 import scala.util.Random
 
 object CommonGenerators {
-  def generateSid(): String = ???
+  def genSid(): String = genString()
 
+  def genString(): String = UUID.randomUUID().toString
 
-  def generateString(): String = ???
+  def genInt(): Int = Random.nextInt()
 
-  def generateBoolean(): Boolean = Random.nextBoolean()
+  def genBoolean(): Boolean = Random.nextBoolean()
 
-  def generateJsonObject(): JsonObject = JsonObject()
+  def genOption(): Option[Unit] = if(genBoolean()) Some(()) else None
+
+  def genJsonObject(): JsonObject = JsonObject()
 
 
 }

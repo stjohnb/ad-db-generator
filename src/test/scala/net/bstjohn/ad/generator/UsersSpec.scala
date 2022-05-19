@@ -15,7 +15,7 @@ class UsersSpec extends CatsEffectSuite {
       parsed = parse(serialised).getOrElse(???)
       decoded = Decoder[Users].decodeJson(parsed).fold(e => throw e, identity)
     } yield {
-      assertEquals(decoded.asJson, parsed)
+      assertEquals(decoded.asJson, parsed.deepDropNullValues)
     }
   }
 }

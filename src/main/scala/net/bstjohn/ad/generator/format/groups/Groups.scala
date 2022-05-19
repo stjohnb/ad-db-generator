@@ -11,6 +11,6 @@ case class Groups(
 
 object Groups {
   implicit val GroupsDecoder: Decoder[Groups] = deriveDecoder[Groups]
-  implicit val GroupsEncoder: Encoder[Groups] = deriveEncoder[Groups]
+  implicit val GroupsEncoder: Encoder[Groups] = deriveEncoder[Groups].mapJson(_.deepDropNullValues)
 
 }
