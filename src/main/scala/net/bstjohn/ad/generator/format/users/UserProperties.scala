@@ -1,7 +1,9 @@
 package net.bstjohn.ad.generator.format.users
 
+import com.softwaremill.diffx.Diff
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder, Json}
+import net.bstjohn.ad.generator.snapshots.diffs.JsonDiffInstance
 
 case class UserProperties(
   domain: String,
@@ -38,5 +40,12 @@ case class UserProperties(
 object UserProperties {
   implicit val UserPropertiesDecoder: Decoder[UserProperties] = deriveDecoder[UserProperties]
   implicit val UserPropertiesEncoder: Encoder[UserProperties] = deriveEncoder[UserProperties].mapJson(_.deepDropNullValues)
+
+  import JsonDiffInstance._
+
+  implicit val jsonOptionDiffInstance: Diff[Option[Json]] = JsonDiffInstance.diffForOptionJson(implicitly[Diff[String]])
+  implicit val jsonOptionListDiffInstance: Diff[Option[List[Json]]] = JsonDiffInstance.diffForOptionListJson(implicitly[Diff[String]])
+
+  implicit val UserPropertiesDiff = Diff.derived[UserProperties]
 
 }

@@ -18,5 +18,7 @@ lazy val root = (project in file(".")).settings(
     "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test,
     "com.beachape" %% "enumeratum" % EnumeratumVersion,
     "com.beachape" %% "enumeratum-circe" % EnumeratumVersion,
+    "com.softwaremill.diffx" %% "diffx-utest" % "0.7.0",
+
   )
 )
