@@ -1,14 +1,13 @@
 package net.bstjohn.ad.generator.generators
 
-import io.circe.Json
 import net.bstjohn.ad.generator.format.domains.Domain
 import net.bstjohn.ad.generator.format.users.{User, UserProperties}
 import net.bstjohn.ad.generator.generators.AceGenerator.generateAces
-import net.bstjohn.ad.generator.generators.CommonGenerators.{genBoolean, genInt, genJsonObject, genOption, genSid, genString}
+import net.bstjohn.ad.generator.generators.CommonGenerators.{genBoolean, genInt, genOption, genSid, genString}
 
 object UserGenerator {
   def generateUser(
-    domain: Domain = DomainGenerator.generateDomain()
+    domain: Domain
   ): User = {
     User(
       List.empty,

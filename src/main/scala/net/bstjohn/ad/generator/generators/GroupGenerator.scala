@@ -3,11 +3,11 @@ package net.bstjohn.ad.generator.generators
 import net.bstjohn.ad.generator.format.domains.Domain
 import net.bstjohn.ad.generator.format.groups.{Group, GroupMember, GroupProperties}
 import net.bstjohn.ad.generator.generators.AceGenerator.generateAces
-import net.bstjohn.ad.generator.generators.CommonGenerators.{genBoolean, genInt, genJsonObject, genOption, genSid, genString}
+import net.bstjohn.ad.generator.generators.CommonGenerators._
 
 object GroupGenerator {
   def generateGroup(
-    domain: Domain = DomainGenerator.generateDomain(),
+    domain: Domain,
     members: Iterable[GroupMember] = List.empty
   ): Group = {
     Group(

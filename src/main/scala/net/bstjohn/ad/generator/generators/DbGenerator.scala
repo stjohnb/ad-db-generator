@@ -10,13 +10,17 @@ import net.bstjohn.ad.generator.snapshots.DbSnapshot
 object DbGenerator {
   def generateNestedGroupsDb(): DbSnapshot = {
     val domain = generateDomain()
-    val users1 = (1 to 100).map(_ => UserGenerator.generateUser())
-    val users2 = (1 to 100).map(_ => UserGenerator.generateUser())
+    val domainAdminsGroup = GroupGenerator.generateGroup(domain)
+
+    val users1 = (1 to 100).map(_ => UserGenerator.generateUser(domain))
+    val users2 = (1 to 100).map(_ => UserGenerator.generateUser(domain))
 
     val group1 = GroupGenerator.generateGroup(
+      domain = domain,
       members = users1.map(GroupMember.fromUser)
     )
     val group2 = GroupGenerator.generateGroup(
+      domain = domain,
       members = users2.map(GroupMember.fromUser)
         :+ GroupMember.fromGroup(group1)
     )
@@ -28,7 +32,7 @@ object DbGenerator {
         meta = generateMeta()
       ),
       groups = Groups(
-        data = List(group1, group2),
+        data = List(group1, group2, domainAdminsGroup),
         meta = generateMeta()
       )
     )
