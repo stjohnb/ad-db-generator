@@ -9,31 +9,29 @@ object HelloWorld {
 
   val Root = "/Users/brendanstjohn/queens/ad-db-snapshots/"
 
-  val fileNames = List(
-    "20220506180850_BloodHound.zip",
-    "20220506183026_BloodHound.zip",
-    "20220507084916_BloodHound.zip",
-    "20220507091000_BloodHound.zip",
-    "20220507092238_BloodHound.zip",
-    "20220509120734_BloodHound.zip",
-    "20220509121121_BloodHound.zip",
-    "20220509121320_BloodHound.zip",
-    "20220509121936_BloodHound.zip",
-    "20220509125013_BloodHound.zip",
-    "20220509135532_BloodHound.zip",
+  val timestamps = List(
+    "20220506180850",
+    "20220506183026",
+    "20220507084916",
+    "20220507091000",
+    "20220507092238",
+    "20220509120734",
+    "20220509121121",
+    "20220509121320",
+    "20220509121936",
+    "20220509125013",
+    "20220509135532",
   )
 
-  val filePaths = fileNames.map(name => s"$Root/$name").zipWithIndex
-
-  def say(): IO[Unit] = filePaths.sliding(2).map {
-    case List((initialPath, initialIndex), (updatedPath, updatedIndex)) =>
+  def say(): IO[Unit] = timestamps.sliding(2).map {
+    case List(initialTimestamp, updatedTimestamp) =>
       for {
-        initial <- ZipSnapshotReader.read(initialPath)
-        updated <- ZipSnapshotReader.read(updatedPath)
+        initial <- ZipSnapshotReader.read(s"$Root/${initialTimestamp}_BloodHound.zip")
+        updated <- ZipSnapshotReader.read(s"$Root/${updatedTimestamp}_BloodHound.zip")
         _ <- initial.zip(updated).map { case (i, u) =>
           val diff = SnapshotDiff.from(i, u)
 
-          SnapshotDiff.write(diff, s"target/diffs/$initialIndex-$updatedIndex-diff.json")
+          SnapshotDiff.write(diff, s"target/diffs/$initialTimestamp-$updatedTimestamp-diff.json")
         }.getOrElse(().pure[IO])
       } yield ()
     case _ =>

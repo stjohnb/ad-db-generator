@@ -3,6 +3,7 @@ package net.bstjohn.ad.generator.snapshots.diffs
 import com.softwaremill.diffx.DiffResult
 import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import net.bstjohn.ad.generator.format.common.Ace
 import net.bstjohn.ad.generator.format.users.User
 import net.bstjohn.ad.generator.snapshots.DbSnapshot
 import net.bstjohn.ad.generator.snapshots.diffs.UsersDiff.UserUpdated
@@ -20,22 +21,26 @@ object UsersDiff {
   case class UserUpdated(
     previous: User,
     current: User,
-    diffResult: DiffResult
+    acesAdded: Set[Ace],
+    acesRemoved: Set[Ace],
+//    diffResult: DiffResult
   )
 
   object UserUpdated {
-    import DiffResultJsonFormat._
+//    import DiffResultJsonFormat._
 
     implicit val UserUpdatedEncoder: Encoder[UserUpdated] = deriveEncoder[UserUpdated]
 
-    def apply(previous: User, current: User): UserUpdated = {
-      import com.softwaremill.diffx.generic.auto._
-      import com.softwaremill.diffx._
-
-      UserUpdated(previous, current, compare(previous, current))
-    }
+//    def apply(previous: User, current: User): UserUpdated = {
+//      import com.softwaremill.diffx.generic.auto._
+//      import com.softwaremill.diffx._
+//
+//      UserUpdated(previous, current, compare(previous, current))
+//    }
 
   }
+
+  val empty = UsersDiff(List.empty, List.empty, List.empty)
 
   def from(s1: DbSnapshot, s2: DbSnapshot): UsersDiff = {
     val created = s2.users.data.collect {
@@ -46,7 +51,12 @@ object UsersDiff {
     val updates = s2.users.data.flatMap { update =>
       s1.users.data.find(g => g.ObjectIdentifier == update.ObjectIdentifier) match {
         case Some(previous) if previous != update =>
-          Some(UserUpdated(previous, update))
+          Some(UserUpdated(
+            previous,
+            update,
+            update.Aces.toSet.diff(previous.Aces.toSet),
+            previous.Aces.toSet.diff(update.Aces.toSet)
+          ))
         case _ =>
           None
       }

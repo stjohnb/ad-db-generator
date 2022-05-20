@@ -1,16 +1,15 @@
 package net.bstjohn.ad.generator.format.users
 
-import com.softwaremill.diffx.Diff
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
-import io.circe.{Decoder, Encoder, Json, JsonObject}
+import io.circe.{Decoder, Encoder}
 import net.bstjohn.ad.generator.format.common.Ace
 
 case class User(
-  AllowedToDelegate: List[String],
+  AllowedToDelegate: Iterable[String],
   PrimaryGroupSID: Option[String],
-  HasSIDHistory: List[String],
-  SPNTargets: List[String],
-  Aces: List[Ace],
+  HasSIDHistory: Iterable[String],
+  SPNTargets: Iterable[String],
+  Aces: Iterable[Ace],
   ObjectIdentifier: String,
   IsDeleted: Boolean,
   IsACLProtected: Boolean,

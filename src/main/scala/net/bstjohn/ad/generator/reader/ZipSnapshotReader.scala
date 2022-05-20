@@ -39,10 +39,15 @@ object ZipSnapshotReader {
       for {
         uu <- u
         gg <- g
-      } yield Some(snapshots.DbSnapshot(
-        users = uu,
-        groups = gg
-      ))
+      } yield {
+        val s = snapshots.DbSnapshot(
+          Some(path),
+          users = uu,
+          groups = gg
+        )
+
+        Some(s)
+      }
     }).getOrElse(IO.pure(None))
   }
 

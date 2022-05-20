@@ -15,9 +15,9 @@ object SnapshotDiff {
 
   implicit val SnapshotDiffEncoder: Encoder[SnapshotDiff] = deriveEncoder[SnapshotDiff]
 
-  def from(s1: DbSnapshot, s2: DbSnapshot): SnapshotDiff = {
-    val userDiffs = UsersDiff.from(s1, s2)
-    val groupDiffs = GroupsDiff.from(s1, s2)
+  def from(initial: DbSnapshot, update: DbSnapshot): SnapshotDiff = {
+    val userDiffs = UsersDiff.empty //.from(initial, update)
+    val groupDiffs = GroupsDiff.from(initial, update)
 
     SnapshotDiff(
       userDiffs,

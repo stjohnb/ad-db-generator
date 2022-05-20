@@ -22,6 +22,7 @@ object DbGenerator {
     )
 
     snapshots.DbSnapshot(
+      None,
       users = Users(
         users1 ++ users2,
         meta = generateMeta()

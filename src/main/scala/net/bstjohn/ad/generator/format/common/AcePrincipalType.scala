@@ -7,7 +7,7 @@ sealed trait AcePrincipalType extends EnumEntry
 object AcePrincipalType
   extends Enum[AcePrincipalType]
     with CirceEnum[AcePrincipalType] {
-  val values = findValues
+  val values: IndexedSeq[AcePrincipalType] = findValues
 
   case object Group extends AcePrincipalType
 
