@@ -2,7 +2,7 @@ package net.bstjohn.ad.generator.format.domains
 
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder, Json, JsonObject}
-import net.bstjohn.ad.generator.format.common.Ace
+import net.bstjohn.ad.generator.format.ace.Ace
 
 case class DomainChildObject(
   ObjectIdentifier: String,

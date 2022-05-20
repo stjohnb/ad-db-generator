@@ -1,12 +1,12 @@
-package net.bstjohn.ad.generator.format.common
+package net.bstjohn.ad.generator.format.ace
 
-import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import io.circe.{Decoder, Encoder}
 
 case class Ace(
   PrincipalSID: String,
   PrincipalType: AcePrincipalType,
-  RightName: String,
+  RightName: RightName,
   IsInherited: Boolean
 )
 

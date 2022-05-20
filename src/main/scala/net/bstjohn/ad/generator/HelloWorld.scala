@@ -3,24 +3,25 @@ package net.bstjohn.ad.generator
 import cats.effect.IO
 import cats.implicits.{catsSyntaxApplicativeId, toTraverseOps}
 import net.bstjohn.ad.generator.reader.ZipSnapshotReader
-import net.bstjohn.ad.generator.snapshots.SnapshotDiff
+import net.bstjohn.ad.generator.snapshots.{DatabaseEvolution, SnapshotDiff}
 
 object HelloWorld {
 
   val Root = "/Users/brendanstjohn/queens/ad-db-snapshots/"
 
   val timestamps = List(
-    "20220506180850",
-    "20220506183026",
-    "20220507084916",
-    "20220507091000",
-    "20220507092238",
-    "20220509120734",
-    "20220509121121",
-    "20220509121320",
-    "20220509121936",
-    "20220509125013",
+//    "20220506180850",
+//    "20220506183026",
+//    "20220507084916",
+//    "20220507091000",
+//    "20220507092238",
+//    "20220509120734",
+//    "20220509121121",
+//    "20220509121320",
+//    "20220509121936",
+//    "20220509125013",
     "20220509135532",
+    "20220520162651",
   )
 
   def say(): IO[Unit] = timestamps.sliding(2).map {
@@ -37,5 +38,13 @@ object HelloWorld {
     case _ =>
       ().pure[IO]
   }.toList.sequence.map(_ => ())
+
+  def evolution() = {
+    timestamps.map { t =>
+      ZipSnapshotReader.read(s"$Root/${t}_BloodHound.zip")
+    }.sequence.map { snapshots =>
+      DatabaseEvolution(snapshots.flatten)
+    }
+  }
 
 }

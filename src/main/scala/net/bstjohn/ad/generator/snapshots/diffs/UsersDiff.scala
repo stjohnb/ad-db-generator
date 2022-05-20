@@ -3,7 +3,7 @@ package net.bstjohn.ad.generator.snapshots.diffs
 import com.softwaremill.diffx.DiffResult
 import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
-import net.bstjohn.ad.generator.format.common.Ace
+import net.bstjohn.ad.generator.format.ace.Ace
 import net.bstjohn.ad.generator.format.users.User
 import net.bstjohn.ad.generator.snapshots.DbSnapshot
 import net.bstjohn.ad.generator.snapshots.diffs.UsersDiff.UserUpdated
@@ -19,8 +19,9 @@ object UsersDiff {
   implicit val UserDiffEncoder: Encoder[UsersDiff] = deriveEncoder[UsersDiff]
 
   case class UserUpdated(
-    previous: User,
-    current: User,
+//    previous: User,
+//    current: User,
+    name: String,
     acesAdded: Set[Ace],
     acesRemoved: Set[Ace],
 //    diffResult: DiffResult
@@ -52,8 +53,9 @@ object UsersDiff {
       s1.users.data.find(g => g.ObjectIdentifier == update.ObjectIdentifier) match {
         case Some(previous) if previous != update =>
           Some(UserUpdated(
-            previous,
-            update,
+//            previous,
+//            update,
+            name = previous.Properties.name,
             update.Aces.toSet.diff(previous.Aces.toSet),
             previous.Aces.toSet.diff(update.Aces.toSet)
           ))

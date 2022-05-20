@@ -1,4 +1,4 @@
-package net.bstjohn.ad.generator.format.common
+package net.bstjohn.ad.generator.format.ace
 
 import enumeratum._
 

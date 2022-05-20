@@ -2,7 +2,7 @@ package net.bstjohn.ad.generator.format.domains
 
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder, Json, JsonObject}
-import net.bstjohn.ad.generator.format.common.{Ace, AcePrincipalType}
+import net.bstjohn.ad.generator.format.ace.{Ace, AcePrincipalType, RightName}
 import net.bstjohn.ad.generator.format.groups.Group
 
 case class Domain(
@@ -22,19 +22,19 @@ case class Domain(
         Ace(
           PrincipalSID = group.ObjectIdentifier,
           PrincipalType = AcePrincipalType.Group,
-          RightName = "WriteDacl",
+          RightName = RightName.WriteDacl,
           IsInherited = false
         ),
         Ace(
           PrincipalSID = group.ObjectIdentifier,
           PrincipalType = AcePrincipalType.Group,
-          RightName = "WriteOwner",
+          RightName = RightName.WriteOwner,
           IsInherited = false
         ),
         Ace(
           PrincipalSID = group.ObjectIdentifier,
           PrincipalType = AcePrincipalType.Group,
-          RightName = "AllExtendedRights",
+          RightName = RightName.AllExtendedRights,
           IsInherited = false
         ),
       )

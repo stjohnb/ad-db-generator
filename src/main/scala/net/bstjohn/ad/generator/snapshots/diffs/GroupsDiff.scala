@@ -3,7 +3,7 @@ package net.bstjohn.ad.generator.snapshots.diffs
 import com.softwaremill.diffx.DiffResult
 import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
-import net.bstjohn.ad.generator.format.common.Ace
+import net.bstjohn.ad.generator.format.ace.Ace
 import net.bstjohn.ad.generator.format.groups.{Group, GroupMember}
 import net.bstjohn.ad.generator.snapshots.DbSnapshot
 import net.bstjohn.ad.generator.snapshots.diffs.GroupsDiff.GroupUpdated
