@@ -12,6 +12,8 @@ object CommonGenerators {
 
   def genInt(): Int = Random.nextInt()
 
+  def genLong(): Long = Random.nextLong()
+
   def genBoolean(): Boolean = Random.nextBoolean()
 
   def genOption(): Option[Unit] = if(genBoolean()) Some(()) else None

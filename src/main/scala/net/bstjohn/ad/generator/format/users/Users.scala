@@ -2,7 +2,7 @@ package net.bstjohn.ad.generator.format.users
 
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder}
-import net.bstjohn.ad.generator.format.common.Meta
+import net.bstjohn.ad.generator.format.common.{Meta, MetaType}
 
 case class Users(
   data: Iterable[User],
@@ -13,4 +13,7 @@ object Users {
   implicit val UsersDecoder: Decoder[Users] = deriveDecoder[Users]
   implicit val UsersEncoder: Encoder[Users] = deriveEncoder[Users].mapJson(_.deepDropNullValues)
 
+  def apply(users: Iterable[User]): Users = {
+    Users(users, Meta(MetaType.users, users.size))
+  }
 }

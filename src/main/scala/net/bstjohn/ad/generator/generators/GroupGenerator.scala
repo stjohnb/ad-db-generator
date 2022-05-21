@@ -4,10 +4,13 @@ import net.bstjohn.ad.generator.format.domains.Domain
 import net.bstjohn.ad.generator.format.groups.{Group, GroupMember, GroupProperties}
 import net.bstjohn.ad.generator.generators.AceGenerator.generateAces
 import net.bstjohn.ad.generator.generators.CommonGenerators._
+import net.bstjohn.ad.generator.generators.model.EpochSeconds
 
 object GroupGenerator {
   def generateGroup(
     domain: Domain,
+    whenCreated: EpochSeconds,
+    name: String = genString(),
     members: Iterable[GroupMember] = List.empty
   ): Group = {
     Group(
@@ -16,18 +19,22 @@ object GroupGenerator {
       genSid(),
       genBoolean(),
       genBoolean(),
-      genGroupProperties(domain)
+      genGroupProperties(domain, whenCreated, name)
     )
   }
 
-  def genGroupProperties(domain: Domain): GroupProperties = GroupProperties(
+  private def genGroupProperties(
+    domain: Domain,
+    whenCreated: EpochSeconds,
+    name: String
+  ): GroupProperties = GroupProperties(
     domain = domain.Properties.name,
-    name = genString(),
+    name = name,
     distinguishedname = genOption().map(_ => genString()),
     domainsid = domain.ObjectIdentifier,
     highvalue = genOption().map(_ => genBoolean()),
     description = genOption().map(_ => genString()),
-    whencreated = genOption().map(_ => genInt()),
+    whencreated = Some(whenCreated.value),
     admincount = genOption().map(_ => genBoolean()),
   )
 

@@ -1,11 +1,12 @@
 package net.bstjohn.ad.generator.generators
 
 import net.bstjohn.ad.generator.format.domains.{Domain, DomainProperties}
-import net.bstjohn.ad.generator.format.groups.{Group, GroupMember}
-import net.bstjohn.ad.generator.generators.CommonGenerators.{genBoolean, genInt, genJsonObject, genOption, genSid, genString}
+import net.bstjohn.ad.generator.generators.CommonGenerators._
+import net.bstjohn.ad.generator.generators.model.EpochSeconds
 
 object DomainGenerator {
   def generateDomain(
+    whenCreated: EpochSeconds
   ): Domain = {
     val sid = genSid()
     val name = genString()
@@ -19,11 +20,15 @@ object DomainGenerator {
       genBoolean(),
       genBoolean(),
       genJsonObject(),
-      genDomainProperties(sid, name)
+      genDomainProperties(sid, name, whenCreated)
     )
   }
 
-  private def genDomainProperties(sid: String, name: String): DomainProperties = {
+  private def genDomainProperties(
+    sid: String,
+    name: String,
+    whenCreated: EpochSeconds,
+  ): DomainProperties = {
     DomainProperties(
       domain = name,
       name = name,
@@ -31,7 +36,7 @@ object DomainGenerator {
       domainsid = sid,
       genBoolean(),
       genOption().map(_ => genString()),
-      genInt(),
+      whencreated = whenCreated.value,
       genString(),
     )
   }

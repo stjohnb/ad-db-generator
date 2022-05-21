@@ -10,7 +10,7 @@ case class DomainProperties(
   domainsid: String,
   highvalue: Boolean,
   description: Option[String],
-  whencreated: Int,
+  whencreated: Long,
   functionallevel: String,
 )
 

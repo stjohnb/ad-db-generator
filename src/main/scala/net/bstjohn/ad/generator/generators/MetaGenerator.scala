@@ -1,18 +1,20 @@
 package net.bstjohn.ad.generator.generators
 
-import net.bstjohn.ad.generator.format.common.Meta
+import net.bstjohn.ad.generator.format.common.{Meta, MetaType}
 import net.bstjohn.ad.generator.generators.CommonGenerators.genString
 
 import scala.util.Random
 
 object MetaGenerator {
-  def generateMeta() = {
+  def generateMeta(
+    `type`: MetaType = Random.shuffle(MetaType.values).head,
+    count: Int = Random.nextInt()
+  ) = {
     Meta(
-      methods = Random.nextInt(),
-      `type` = genString(),
-      count = Random.nextInt(),
-      version = Random.nextInt()
-
+      methods = 29675,
+      `type` = `type`,
+      count = count,
+      version = 4
     )
   }
 }

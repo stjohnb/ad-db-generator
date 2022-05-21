@@ -10,7 +10,7 @@ case class GroupProperties(
   domainsid: String,
   highvalue: Option[Boolean],
   description: Option[String],
-  whencreated: Option[Int],
+  whencreated: Option[Long],
   admincount: Option[Boolean],
 )
 
