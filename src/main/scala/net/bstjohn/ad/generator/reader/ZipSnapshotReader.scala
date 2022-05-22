@@ -10,15 +10,20 @@ import net.bstjohn.ad.generator.generators.model.EpochSeconds
 import net.bstjohn.ad.generator.snapshots.DbSnapshot
 import org.apache.commons.io.input.BOMInputStream
 
+import java.nio.file.Path
 import java.util.zip.{ZipEntry, ZipFile}
 
 object ZipSnapshotReader {
+  def read(path: Path): IO[Option[DbSnapshot]] = IO.defer {
+    read(path.toString)
+  }
+
   def read(path: String): IO[Option[DbSnapshot]] = IO.defer {
     val zipFile = new ZipFile(path)
 
     import scala.jdk.CollectionConverters._
 
-    val entries = zipFile.entries.asScala
+    val entries = zipFile.entries.asScala.toList
 
     val computers = entries.find(e => e.getName.endsWith("computers.json")).map(entry =>
       getContents(zipFile, entry).map( contents =>
@@ -44,7 +49,9 @@ object ZipSnapshotReader {
       )
     )
 
-    val epoch = entries.flatMap(e => e.getName.substring(0, 14).toLongOption).toList.headOption.getOrElse(???)
+    val epoch = entries.flatMap(e => e.getName.substring(0, 14).toLongOption).headOption.getOrElse(
+      throw new Exception(s"$path: No entry starting with a 14 digit long. Entries: ${entries.flatMap(_.getName)}")
+    )
 
     (for {
       u <- users
