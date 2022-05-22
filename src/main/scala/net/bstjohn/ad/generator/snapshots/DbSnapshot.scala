@@ -7,6 +7,9 @@ import net.bstjohn.ad.generator.format.users.{User, Users}
 import net.bstjohn.ad.generator.generators.model.EpochSeconds
 import io.circe.syntax._
 import net.bstjohn.ad.generator.format.computers.{Computer, Computers}
+import net.bstjohn.ad.generator.format.containers.Containers
+import net.bstjohn.ad.generator.format.gpos.Gpos
+import net.bstjohn.ad.generator.format.ous.Ous
 
 import java.io.FileOutputStream
 import java.util.zip.ZipEntry
@@ -14,10 +17,13 @@ import java.util.zip.ZipOutputStream
 import java.io.File
 
 case class DbSnapshot(
-  domains: Domains,
-  users: Users,
-  groups: Groups,
   computers: Computers,
+  containers: Containers,
+  domains: Domains,
+  gpos: Gpos,
+  groups: Groups,
+  ous: Ous,
+  users: Users,
   epoch: EpochSeconds
 )
 
@@ -30,10 +36,13 @@ object DbSnapshot {
     epoch: EpochSeconds
   ): DbSnapshot = {
     DbSnapshot(
-      Domains(List(domain)),
-      Users(users),
-      Groups(groups),
       Computers(computers),
+      Containers(List.empty),
+      Domains(List(domain)),
+      Gpos(List.empty),
+      Groups(groups),
+      Ous(List.empty),
+      Users(users),
       epoch
     )
   }
@@ -44,6 +53,10 @@ object DbSnapshot {
 
     val out = new ZipOutputStream(new FileOutputStream(f))
 
+    out.putNextEntry(new ZipEntry(s"${snapshot.epoch.toDateString}_containers.json"))
+    out.write(snapshot.containers.asJson.spaces2.getBytes)
+    out.closeEntry()
+
     out.putNextEntry(new ZipEntry(s"${snapshot.epoch.toDateString}_computers.json"))
     out.write(snapshot.computers.asJson.spaces2.getBytes)
     out.closeEntry()
@@ -52,12 +65,20 @@ object DbSnapshot {
     out.write(snapshot.domains.asJson.spaces2.getBytes)
     out.closeEntry()
 
-    out.putNextEntry(new ZipEntry(s"${snapshot.epoch.toDateString}_users.json"))
-    out.write(snapshot.users.asJson.spaces2.getBytes)
+    out.putNextEntry(new ZipEntry(s"${snapshot.epoch.toDateString}_gpos.json"))
+    out.write(snapshot.gpos.asJson.spaces2.getBytes)
     out.closeEntry()
 
     out.putNextEntry(new ZipEntry(s"${snapshot.epoch.toDateString}_groups.json"))
     out.write(snapshot.groups.asJson.spaces2.getBytes)
+    out.closeEntry()
+
+    out.putNextEntry(new ZipEntry(s"${snapshot.epoch.toDateString}_ous.json"))
+    out.write(snapshot.ous.asJson.spaces2.getBytes)
+    out.closeEntry()
+
+    out.putNextEntry(new ZipEntry(s"${snapshot.epoch.toDateString}_users.json"))
+    out.write(snapshot.users.asJson.spaces2.getBytes)
     out.closeEntry()
 
     out.close()
