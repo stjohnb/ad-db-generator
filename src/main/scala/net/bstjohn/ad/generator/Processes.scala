@@ -9,7 +9,7 @@ import org.apache.commons.io.FileUtils
 
 import java.io.File
 
-object HelloWorld {
+object Processes {
 
   val Root = "/Users/brendanstjohn/queens/ad-db-snapshots/"
 
@@ -31,34 +31,21 @@ object HelloWorld {
   val DiffsOutputDir = new File("target/diffs")
   val SnapshotsOutputDir = "target/snapshots"
 
-  def generateDiffs(): IO[Unit] = timestamps.sliding(2).map {
-    case List(initialTimestamp, updatedTimestamp) =>
-      for {
-        _ <- recreateDir(DiffsOutputDir)
-        initial <- ZipSnapshotReader.read(s"$Root/${initialTimestamp}_BloodHound.zip")
-        updated <- ZipSnapshotReader.read(s"$Root/${updatedTimestamp}_BloodHound.zip")
-        _ <- initial.zip(updated).map { case (i, u) =>
-          val diff = SnapshotDiff.from(i, u)
-
-          SnapshotDiff.write(diff, s"target/diffs/$initialTimestamp-$updatedTimestamp-diff.json")
-        }.getOrElse(().pure[IO])
-      } yield ()
-    case _ =>
-      ().pure[IO]
-  }.toList.sequence.map(_ => ())
-
-  def evolution() = {
-    timestamps.map { t =>
-      ZipSnapshotReader.read(s"$Root/${t}_BloodHound.zip")
-    }.sequence.map { snapshots =>
-      DatabaseEvolution(snapshots.flatten)
-    }
-  }
-
-  def recreateDir(dir: File) = IO.delay{
-    FileUtils.deleteDirectory(dir)
-    dir.mkdirs()
-  }
+  def generateDiffs(): IO[Unit] = for {
+    _ <- recreateDir(DiffsOutputDir)
+    _ <- timestamps.sliding(2).map {
+      case List(initialTimestamp, updatedTimestamp) =>
+        for {
+          initial <- ZipSnapshotReader.read(s"$Root/${initialTimestamp}_BloodHound.zip")
+          updated <- ZipSnapshotReader.read(s"$Root/${updatedTimestamp}_BloodHound.zip")
+          _ <- initial.zip(updated).map { case (i, u) =>
+            SnapshotDiff.write(SnapshotDiff.from(i, u), s"target/diffs/$initialTimestamp-$updatedTimestamp-diff.json")
+          }.getOrElse(().pure[IO])
+        } yield ()
+      case _ =>
+        ().pure[IO]
+    }.toList.sequence
+  } yield ()
 
   def produceSnapshots(): IO[Unit] = {
     for {
@@ -66,6 +53,11 @@ object HelloWorld {
       _ <- DatabaseEvolution.writeToDisk(DbGenerator.recreateRealDb(), s"$SnapshotsOutputDir/real")
       _ <- DatabaseEvolution.writeToDisk(DbGenerator.generateNestedGroupsDb(), s"$SnapshotsOutputDir/nested")
     } yield ()
+  }
+
+  private def recreateDir(dir: File) = IO.delay {
+    FileUtils.deleteDirectory(dir)
+    dir.mkdirs()
   }
 
 }
