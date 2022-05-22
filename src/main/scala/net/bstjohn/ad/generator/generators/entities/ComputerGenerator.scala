@@ -3,10 +3,11 @@ package net.bstjohn.ad.generator.generators.entities
 import io.circe.JsonObject
 import net.bstjohn.ad.generator.format.computers.{Computer, ComputerProperties}
 import net.bstjohn.ad.generator.format.domains.Domain
-import net.bstjohn.ad.generator.format.groups.{Group, GroupMember, GroupProperties}
-import net.bstjohn.ad.generator.generators.common.CommonGenerators.{genBoolean, genLong, genOption, genSid, genString}
+import net.bstjohn.ad.generator.generators.common.CommonGenerators._
 import net.bstjohn.ad.generator.generators.entities.AceGenerator.generateAces
 import net.bstjohn.ad.generator.generators.model.EpochSeconds
+
+import scala.util.Random
 
 object ComputerGenerator {
   def generateComputer(
@@ -33,6 +34,18 @@ object ComputerGenerator {
       Properties = genComputerProperties(domain, whenCreated)
     )
   }
+
+  def generateComputers(
+    count: Int,
+    domain: Domain,
+    createdAfter: EpochSeconds,
+    createdBefore: EpochSeconds
+  ) = (0 to count).map { _ =>
+    generateComputer(
+      domain,
+      createdAfter.plusSeconds(Random.nextLong(createdBefore.value - createdAfter.value)))
+  }
+
 
   private def genComputerProperties(
     domain: Domain,

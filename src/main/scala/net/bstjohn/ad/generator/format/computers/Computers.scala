@@ -13,7 +13,7 @@ object Computers {
   implicit val ComputersDecoder: Decoder[Computers] = deriveDecoder[Computers]
   implicit val ComputersEncoder: Encoder[Computers] = deriveEncoder[Computers].mapJson(_.deepDropNullValues)
 
-  def apply(users: Iterable[Computer]): Computers = {
-    Computers(users, Meta(MetaType.users, users.size))
+  def apply(computers: Iterable[Computer]): Computers = {
+    Computers(computers, Meta(MetaType.computers, computers.size))
   }
 }
