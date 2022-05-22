@@ -25,7 +25,21 @@ case class DbSnapshot(
   ous: Ous,
   users: Users,
   epoch: EpochSeconds
-)
+) {
+  def withUpdatedGroup(group: Group): DbSnapshot =
+    copy(groups = groups.copy(
+        data = groups.data.toList.filter(g => g.ObjectIdentifier != group.ObjectIdentifier) :+ group))
+
+  def withUpdatedUser(user: User): DbSnapshot =
+    copy(users = users.copy(
+        data = users.data.toList.filter(d => d.ObjectIdentifier != user.ObjectIdentifier) :+ user))
+
+  def withUpdatedUsers(users: Iterable[User]): DbSnapshot =
+    users.foldLeft(this)((s, u) => s.withUpdatedUser(u))
+
+  def timestamp(epoch: EpochSeconds): DbSnapshot = this.copy(epoch = epoch)
+
+}
 
 object DbSnapshot {
   def apply(

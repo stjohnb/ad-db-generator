@@ -48,26 +48,40 @@ object DbGenerator {
     val bstjohn = generateUser(domain, userCreated).loggedOn(userLoggedOn)
     val groupManagers = generateGroup(domain, userCreated.plusMinutes(5), "Group managers",
       members = List(GroupMember.fromUser(bstjohn)))
-    val s2 = DbSnapshot(domain, List(bstjohn), List(domainAdminsGroup), computers, userCreated.plusMinutes(10))
+    val s2 = s1
+      .withUpdatedUser(bstjohn)
+      .timestamp(userCreated.plusMinutes(10))
 
     val groupCreated = userCreated.plusMinutes(5)
     val csAgentsGroup = generateGroup(domain, groupCreated, "CS Agents")
       .withGroupMember(bstjohn)
-    val s3 = DbSnapshot(domain, List(bstjohn), List(domainAdminsGroup, csAgentsGroup), computers, groupCreated)
+    val s3 = s2
+      .withUpdatedGroup(csAgentsGroup)
+      .timestamp(groupCreated)
 
     val agentsStart = groupCreated.plusMonths(1)
     val agentsEnd = agentsStart.plusYears(1)
     val csAgents = generateUsers(100, domain, agentsStart, agentsEnd)
-    val s4CsAgentsGroup = csAgentsGroup.withGroupMembers(csAgents)
-    val s4 = DbSnapshot(domain, bstjohn +: csAgents, List(domainAdminsGroup, s4CsAgentsGroup), computers, agentsEnd.plusDays(1))
+    val s4 = s3
+      .withUpdatedUsers(csAgents)
+      .withUpdatedGroup(csAgentsGroup.withGroupMembers(csAgents))
+      .timestamp(agentsEnd.plusDays(1))
 
     val s5Start = agentsEnd.plusYears(1)
     val domainAdminManagers = generateGroup(domain, s5Start, "Domain admin managers",
       members = List(GroupMember.fromUser(bstjohn))
     ).withAces(Ace.forGroup(groupManagers, RightName.AddSelf))
-    val s5DomainAdmins = domainAdminsGroup.withAces(Ace.forGroup(domainAdminManagers, RightName.GenericAll))
-    val s5 = DbSnapshot(domain, bstjohn +: csAgents, List(s5DomainAdmins, s4CsAgentsGroup), computers, s5Start.plusDays(10))
 
-    DatabaseEvolution(s1, s2, s3, s4, s5)
+    val s5 = s4
+      .withUpdatedGroup(domainAdminManagers)
+      .withUpdatedGroup(domainAdminsGroup.withAces(Ace.forGroup(domainAdminManagers, RightName.GenericAll)))
+      .timestamp(s5Start.plusDays(10))
+
+    val s6Timestamp = s5Start.plusMonths(2)
+    val s6 = s5
+      .withUpdatedGroup(domainAdminManagers.withGroupMember(bstjohn))
+      .timestamp(s6Timestamp)
+
+    DatabaseEvolution(s1, s2, s3, s4, s5, s6)
   }
 }
