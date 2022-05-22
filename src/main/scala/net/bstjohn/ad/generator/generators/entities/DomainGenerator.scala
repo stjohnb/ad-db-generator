@@ -1,7 +1,7 @@
-package net.bstjohn.ad.generator.generators
+package net.bstjohn.ad.generator.generators.entities
 
 import net.bstjohn.ad.generator.format.domains.{Domain, DomainProperties}
-import net.bstjohn.ad.generator.generators.CommonGenerators._
+import net.bstjohn.ad.generator.generators.common.CommonGenerators.{genBoolean, genJsonObject, genOption, genSid, genString}
 import net.bstjohn.ad.generator.generators.model.EpochSeconds
 
 object DomainGenerator {

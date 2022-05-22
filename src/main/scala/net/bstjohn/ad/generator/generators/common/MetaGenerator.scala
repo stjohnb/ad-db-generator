@@ -1,7 +1,6 @@
-package net.bstjohn.ad.generator.generators
+package net.bstjohn.ad.generator.generators.common
 
 import net.bstjohn.ad.generator.format.common.{Meta, MetaType}
-import net.bstjohn.ad.generator.generators.CommonGenerators.genString
 
 import scala.util.Random
 

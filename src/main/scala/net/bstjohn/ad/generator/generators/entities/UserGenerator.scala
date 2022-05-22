@@ -1,10 +1,10 @@
-package net.bstjohn.ad.generator.generators
+package net.bstjohn.ad.generator.generators.entities
 
 import net.bstjohn.ad.generator.format.domains.Domain
 import net.bstjohn.ad.generator.format.users.{User, UserProperties}
-import net.bstjohn.ad.generator.generators.AceGenerator.generateAces
-import net.bstjohn.ad.generator.generators.CommonGenerators.{genBoolean, genOption, genSid, genString}
-import net.bstjohn.ad.generator.generators.NameGenerator.generateName
+import net.bstjohn.ad.generator.generators.model.NameGenerator.generateName
+import net.bstjohn.ad.generator.generators.common.CommonGenerators.{genBoolean, genOption, genSid, genString}
+import net.bstjohn.ad.generator.generators.entities.AceGenerator.generateAces
 import net.bstjohn.ad.generator.generators.model.EpochSeconds
 
 import scala.util.Random
@@ -57,7 +57,7 @@ object UserGenerator {
       lastlogon = None,
       lastlogontimestamp = None,
       pwdlastset = Some(whenCreated.value),
-      serviceprincipalnames = None ,
+      serviceprincipalnames = None,
       hasspn = genOption().map(_ => genBoolean()),
       displayname = Some(name.fullName),
       email = None,

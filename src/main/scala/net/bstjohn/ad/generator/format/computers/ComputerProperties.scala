@@ -1,6 +1,5 @@
 package net.bstjohn.ad.generator.format.computers
 
-
 import com.softwaremill.diffx.Diff
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder, Json}

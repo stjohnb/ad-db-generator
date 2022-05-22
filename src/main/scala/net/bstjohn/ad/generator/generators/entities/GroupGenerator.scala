@@ -1,9 +1,9 @@
-package net.bstjohn.ad.generator.generators
+package net.bstjohn.ad.generator.generators.entities
 
 import net.bstjohn.ad.generator.format.domains.Domain
 import net.bstjohn.ad.generator.format.groups.{Group, GroupMember, GroupProperties}
-import net.bstjohn.ad.generator.generators.AceGenerator.generateAces
-import net.bstjohn.ad.generator.generators.CommonGenerators._
+import net.bstjohn.ad.generator.generators.common.CommonGenerators.{genBoolean, genOption, genSid, genString}
+import net.bstjohn.ad.generator.generators.entities.AceGenerator.generateAces
 import net.bstjohn.ad.generator.generators.model.EpochSeconds
 
 object GroupGenerator {

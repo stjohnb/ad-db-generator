@@ -1,7 +1,7 @@
-package net.bstjohn.ad.generator.generators
+package net.bstjohn.ad.generator.generators.entities
 
 import net.bstjohn.ad.generator.format.ace.{Ace, AcePrincipalType, RightName}
-import net.bstjohn.ad.generator.generators.CommonGenerators.{genBoolean, genString}
+import net.bstjohn.ad.generator.generators.common.CommonGenerators.{genBoolean, genString}
 
 import scala.util.Random
 

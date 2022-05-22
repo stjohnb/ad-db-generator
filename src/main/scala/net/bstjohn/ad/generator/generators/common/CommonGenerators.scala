@@ -1,4 +1,4 @@
-package net.bstjohn.ad.generator.generators
+package net.bstjohn.ad.generator.generators.common
 
 import io.circe.JsonObject
 
@@ -16,7 +16,7 @@ object CommonGenerators {
 
   def genBoolean(): Boolean = Random.nextBoolean()
 
-  def genOption(): Option[Unit] = if(genBoolean()) Some(()) else None
+  def genOption(): Option[Unit] = if (genBoolean()) Some(()) else None
 
   def genJsonObject(): JsonObject = JsonObject()
 

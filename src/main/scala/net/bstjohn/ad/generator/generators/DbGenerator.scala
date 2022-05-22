@@ -1,18 +1,14 @@
 package net.bstjohn.ad.generator.generators
 
 import net.bstjohn.ad.generator.format.ace.{Ace, RightName}
-import net.bstjohn.ad.generator.format.common.{Meta, MetaType}
-import net.bstjohn.ad.generator.format.domains.Domains
-import net.bstjohn.ad.generator.format.groups.{GroupMember, Groups}
-import net.bstjohn.ad.generator.format.users.Users
-import net.bstjohn.ad.generator.generators.DomainGenerator.generateDomain
-import net.bstjohn.ad.generator.generators.GroupGenerator.{genGroupProperties, generateGroup}
-import net.bstjohn.ad.generator.generators.MetaGenerator.generateMeta
-import net.bstjohn.ad.generator.generators.UserGenerator.generateUser
+import net.bstjohn.ad.generator.format.groups.GroupMember
+import net.bstjohn.ad.generator.generators.entities.DomainGenerator.generateDomain
+import net.bstjohn.ad.generator.generators.entities.GroupGenerator.generateGroup
+import net.bstjohn.ad.generator.generators.entities.UserGenerator.{generateUser, generateUsers}
 import net.bstjohn.ad.generator.generators.model.EpochSeconds
 import net.bstjohn.ad.generator.snapshots.{DatabaseEvolution, DbSnapshot}
 
-import java.util.{Calendar, Date, GregorianCalendar}
+import java.util.{Calendar, GregorianCalendar}
 
 object DbGenerator {
   def generateNestedGroupsDb(): DatabaseEvolution = {
@@ -22,7 +18,7 @@ object DbGenerator {
     val start = EpochSeconds.fromDate(date)
 
     val domain = generateDomain(start)
-    val domainAdminsGroup = GroupGenerator.generateGroup(domain, start)
+    val domainAdminsGroup = generateGroup(domain, start)
 
     val users1 = (1 to 100).map(_ => generateUser(domain, start))
     val users2 = (1 to 100).map(_ => generateUser(domain, start))
@@ -71,7 +67,7 @@ object DbGenerator {
 
     val agentsStart = groupCreated.plusMonths(1)
     val agentsEnd = agentsStart.plusYears(1)
-    val csAgents = UserGenerator.generateUsers(100, domain, agentsStart, agentsEnd)
+    val csAgents = generateUsers(100, domain, agentsStart, agentsEnd)
     val s4CsAgentsGroup = csAgentsGroup.withGroupMembers(csAgents)
     val s4 = DbSnapshot(domain, bstjohn +: csAgents, List(domainAdminsGroup, s4CsAgentsGroup), agentsEnd.plusDays(1))
 

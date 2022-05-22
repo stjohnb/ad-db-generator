@@ -1,4 +1,4 @@
-package net.bstjohn.ad.generator.generators
+package net.bstjohn.ad.generator.generators.model
 
 import scala.util.Random
 

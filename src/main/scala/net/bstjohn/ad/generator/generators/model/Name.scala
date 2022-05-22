@@ -1,4 +1,4 @@
-package net.bstjohn.ad.generator.generators
+package net.bstjohn.ad.generator.generators.model
 
 case class Name(first: String, last: String) {
   def fullName: String = s"$first $last"
