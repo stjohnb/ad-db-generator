@@ -13,11 +13,16 @@ case class Group(
   IsACLProtected: Boolean,
   Properties: GroupProperties,
 ) {
-  def withGroupMember(user: User): Group = {
+
+  def withGroupMember(user: User): Group =
     copy(
-      Members = Members.toList :+ GroupMember.fromUser(user)
-    )
-  }
+      Members = Members.toList :+ GroupMember.fromUser(user))
+
+  def withGroupMember(group: Group): Group =
+    copy(
+      Members = Members.toList :+ GroupMember.fromGroup(group))
+
+
   def withGroupMembers(users: Iterable[User]): Group = {
     copy(
       Members = Members.toList ++ users.map(GroupMember.fromUser)

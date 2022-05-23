@@ -84,4 +84,36 @@ object DbGenerator {
 
     DatabaseEvolution(s1, s2, s3, s4, s5, s6)
   }
+
+  def geographicallyNestedGroups(): DatabaseEvolution = {
+    val date = new GregorianCalendar(2005, Calendar.FEBRUARY, 11).getTime
+
+    val start = EpochSeconds.fromDate(date)
+    val domain = generateDomain(start)
+    val domainAdminsGroup = generateGroup(domain, start, "DOMAIN ADMINS")
+    val computers = generateComputers(50, domain, start, start.plusYears(2))
+
+    val p1End = start.plusYears(1)
+    val initialUsers = generateUsers(50, domain, start, p1End)
+    val allUsersGroup = generateGroup(domain, start.plusMonths(1)).withGroupMembers(initialUsers)
+    val s1 = DbSnapshot(domain, initialUsers, List(domainAdminsGroup, allUsersGroup), computers, start)
+
+    val p2End = p1End.plusYears(1)
+    val dublinGroup = generateGroup(domain, p1End)
+      .withGroupMembers(initialUsers)
+    val belfastUsers = generateUsers(100, domain, p1End, p2End)
+    val belfastGroup = generateGroup(domain, p1End)
+      .withGroupMembers(belfastUsers)
+    val s2 = s1
+      .withUpdatedUsers(belfastUsers)
+      .withUpdatedGroup(dublinGroup)
+      .withUpdatedGroup(belfastGroup)
+      .withUpdatedGroup(
+        allUsersGroup
+          .withGroupMember(dublinGroup)
+          .withGroupMember(belfastGroup))
+
+
+    DatabaseEvolution(s1, s2)
+  }
 }
