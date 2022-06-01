@@ -1,7 +1,17 @@
-# TODO
+# Active Directory database snapshot generator
 
-Generate particular entities:
-    Domain admins group
-    krgbtgt users
+## Dependencies
 
-Diff snapshots & group changes
+Install [sbt](https://www.scala-sbt.org/)
+
+### Testing
+
+```bash
+sbt test
+```
+
+### Running
+
+```bash
+sbt run
+```
