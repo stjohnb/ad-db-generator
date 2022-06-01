@@ -11,7 +11,7 @@ class ExportsSpec extends CatsEffectSuite {
 
   test("de-serialises all exports") {
     val zipFiles = Files.find(Paths.get(
-      "/Users/brendanstjohn/queens/ad-db-snapshots/"), 2, (p, _) => p.getFileName.toString.endsWith(".zip")
+      "test-environment-snapshots/"), 2, (p, _) => p.getFileName.toString.endsWith(".zip")
     ).iterator().asScala.toList
 
     for {
@@ -22,16 +22,19 @@ class ExportsSpec extends CatsEffectSuite {
       }
     }
   }
-  test("de-serialises all generated snapshosts") {
-    val zipFiles = Files.find(Paths.get(
-      "target/snapshots"), 2, (p, _) => p.getFileName.toString.endsWith(".zip")
-    ).iterator().asScala.toList
+  test("de-serialises all generated snapshots") {
+    val mainOutputDir = Paths.get("target/snapshots")
 
-    for {
-      snapshotOpts <- zipFiles.map(ZipSnapshotReader.read).sequence
-    } yield {
-      snapshotOpts.map { snapshotOpt =>
-        assertEquals(snapshotOpt.isDefined, true)
+    if(Files.exists(mainOutputDir)) {
+      val zipFiles = Files.find(mainOutputDir, 2, (p, _) => p.getFileName.toString.endsWith(".zip")
+      ).iterator().asScala.toList
+
+      for {
+        snapshotOpts <- zipFiles.map(ZipSnapshotReader.read).sequence
+      } yield {
+        snapshotOpts.map { snapshotOpt =>
+          assertEquals(snapshotOpt.isDefined, true)
+        }
       }
     }
   }

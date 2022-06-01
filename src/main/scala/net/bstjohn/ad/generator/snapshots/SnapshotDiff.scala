@@ -35,5 +35,6 @@ object SnapshotDiff {
   private def writeToFile(contents: String, path: String): IO[Unit] = IO.delay {
     val pw = new PrintWriter(new File(path))
     try pw.write(contents) finally pw.close()
+    println(s"Diff written to $path")
   }
 }

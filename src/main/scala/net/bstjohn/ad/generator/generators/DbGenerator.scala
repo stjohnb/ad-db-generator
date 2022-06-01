@@ -2,7 +2,7 @@ package net.bstjohn.ad.generator.generators
 
 import net.bstjohn.ad.generator.format.ace.{Ace, RightName}
 import net.bstjohn.ad.generator.format.groups.GroupMember
-import net.bstjohn.ad.generator.generators.entities.ComputerGenerator.{generateComputer, generateComputers}
+import net.bstjohn.ad.generator.generators.entities.ComputerGenerator.generateComputers
 import net.bstjohn.ad.generator.generators.entities.DomainGenerator.generateDomain
 import net.bstjohn.ad.generator.generators.entities.GroupGenerator.generateGroup
 import net.bstjohn.ad.generator.generators.entities.UserGenerator.{generateUser, generateUsers}
@@ -18,10 +18,10 @@ object DbGenerator {
 
     val domain = generateDomain(start)
     val domainAdminsGroup = generateGroup(domain, start)
-    val users1 = generateUsers(100, domain, start, start.plusYears(2))
-    val users2 = generateUsers(100, domain, start, start.plusYears(2))
+    val users1 = generateUsers(50 to 100, domain, start, start.plusYears(2))
+    val users2 = generateUsers(50 to 100, domain, start, start.plusYears(2))
 
-    val computers = generateComputers(50, domain, start, start.plusYears(2))
+    val computers = generateComputers(100 to 200, domain, start, start.plusYears(2))
 
     val group1 = generateGroup(domain, start, members = users1.map(GroupMember.fromUser))
     val group2 = generateGroup(domain, start,
@@ -39,7 +39,7 @@ object DbGenerator {
     val start = EpochSeconds.fromDate(date)
     val domain = generateDomain(start)
     val domainAdminsGroup = generateGroup(domain, start, "DOMAIN ADMINS")
-    val computers = generateComputers(50, domain, start, start.plusYears(2))
+    val computers = generateComputers(50 to 100, domain, start, start.plusYears(2))
 
     val s1 = DbSnapshot(domain, List.empty, List(domainAdminsGroup), computers, start)
 
@@ -61,7 +61,7 @@ object DbGenerator {
 
     val agentsStart = groupCreated.plusMonths(1)
     val agentsEnd = agentsStart.plusYears(1)
-    val csAgents = generateUsers(100, domain, agentsStart, agentsEnd)
+    val csAgents = generateUsers(50 to 100, domain, agentsStart, agentsEnd)
     val s4 = s3
       .withUpdatedUsers(csAgents)
       .withUpdatedGroup(csAgentsGroup.withGroupMembers(csAgents))
@@ -91,17 +91,17 @@ object DbGenerator {
     val start = EpochSeconds.fromDate(date)
     val domain = generateDomain(start)
     val domainAdminsGroup = generateGroup(domain, start, "DOMAIN ADMINS")
-    val computers = generateComputers(50, domain, start, start.plusYears(2))
+    val computers = generateComputers(50 to 60, domain, start, start.plusYears(2))
 
     val p1End = start.plusYears(1)
-    val initialUsers = generateUsers(50, domain, start, p1End)
+    val initialUsers = generateUsers(10 to 50, domain, start, p1End)
     val allUsersGroup = generateGroup(domain, start.plusMonths(1)).withGroupMembers(initialUsers)
     val s1 = DbSnapshot(domain, initialUsers, List(domainAdminsGroup, allUsersGroup), computers, start)
 
     val p2End = p1End.plusYears(1)
     val dublinGroup = generateGroup(domain, p1End)
       .withGroupMembers(initialUsers)
-    val belfastUsers = generateUsers(100, domain, p1End, p2End)
+    val belfastUsers = generateUsers(50 to 100, domain, p1End, p2End)
     val belfastGroup = generateGroup(domain, p1End)
       .withGroupMembers(belfastUsers)
     val s2 = s1

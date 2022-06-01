@@ -11,7 +11,7 @@ import java.io.File
 
 object Processes {
 
-  val Root = "/Users/brendanstjohn/queens/ad-db-snapshots/"
+  val Root = "test-environment-snapshots"
 
   val timestamps = List(
     "20220506180850",
