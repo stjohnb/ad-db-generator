@@ -63,7 +63,8 @@ object DbSnapshot {
 
   def writeToDisk(snapshot: DbSnapshot, directory: String): IO[Unit] = IO.delay {
     new File(directory).mkdirs()
-    val f = new File(s"$directory/${snapshot.epoch.toDateString}_BloodHound.zip")
+    val destination = s"$directory/${snapshot.epoch.toDateString}_BloodHound.zip"
+    val f = new File(destination)
 
     val out = new ZipOutputStream(new FileOutputStream(f))
 
@@ -96,5 +97,7 @@ object DbSnapshot {
     out.closeEntry()
 
     out.close()
+
+    println(s"Snapshot written to $destination")
   }
 }

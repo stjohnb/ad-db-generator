@@ -36,14 +36,18 @@ object ComputerGenerator {
   }
 
   def generateComputers(
-    count: Int,
+    randomCount: Range,
     domain: Domain,
     createdAfter: EpochSeconds,
     createdBefore: EpochSeconds
-  ) = (0 to count).map { _ =>
-    generateComputer(
-      domain,
-      createdAfter.plusSeconds(Random.nextLong(createdBefore.value - createdAfter.value)))
+  ) = {
+    val count = Random.nextInt(randomCount.end - randomCount.start) + randomCount.start
+
+    (0 to count).map { _ =>
+      generateComputer(
+        domain,
+        createdAfter.plusSeconds(Random.nextLong(createdBefore.value - createdAfter.value)))
+    }
   }
 
 
