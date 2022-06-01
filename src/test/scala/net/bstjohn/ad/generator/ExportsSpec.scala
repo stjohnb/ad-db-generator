@@ -23,15 +23,18 @@ class ExportsSpec extends CatsEffectSuite {
     }
   }
   test("de-serialises all generated snapshots") {
-    val zipFiles = Files.find(Paths.get(
-      "target/snapshots"), 2, (p, _) => p.getFileName.toString.endsWith(".zip")
-    ).iterator().asScala.toList
+    val mainOutputDir = Paths.get("target/snapshots")
 
-    for {
-      snapshotOpts <- zipFiles.map(ZipSnapshotReader.read).sequence
-    } yield {
-      snapshotOpts.map { snapshotOpt =>
-        assertEquals(snapshotOpt.isDefined, true)
+    if(Files.exists(mainOutputDir)) {
+      val zipFiles = Files.find(mainOutputDir, 2, (p, _) => p.getFileName.toString.endsWith(".zip")
+      ).iterator().asScala.toList
+
+      for {
+        snapshotOpts <- zipFiles.map(ZipSnapshotReader.read).sequence
+      } yield {
+        snapshotOpts.map { snapshotOpt =>
+          assertEquals(snapshotOpt.isDefined, true)
+        }
       }
     }
   }
