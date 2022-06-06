@@ -8,7 +8,7 @@ case class DatabaseEvolution(
 )
 
 object DatabaseEvolution {
-  def apply(snapshots: DbSnapshot*): DatabaseEvolution = {
+  def from(snapshots: DbSnapshot*): DatabaseEvolution = {
     DatabaseEvolution(snapshots)
   }
 

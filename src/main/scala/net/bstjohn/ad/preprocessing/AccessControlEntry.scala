@@ -1,5 +1,7 @@
 package net.bstjohn.ad.preprocessing
 
+import io.circe.{Decoder, Encoder}
+import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import net.bstjohn.ad.generator.format.ace.{AcePrincipalType, RightName}
 import net.bstjohn.ad.generator.snapshots.DbSnapshot
 
@@ -13,6 +15,10 @@ case class AccessControlEntry(
 
 
 object AccessControlEntry {
+
+  implicit val AccessControlEntryDecoder: Decoder[AccessControlEntry] = deriveDecoder[AccessControlEntry]
+  implicit val AccessControlEntryEncoder: Encoder[AccessControlEntry] = deriveEncoder[AccessControlEntry]
+
   def from(snapshot: DbSnapshot): Seq[AccessControlEntry] = {
     val userAces = snapshot.users.data.flatMap{ user =>
       user.Aces.map { ace =>

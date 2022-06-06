@@ -4,7 +4,8 @@ import cats.effect.IO
 import cats.implicits.{catsSyntaxApplicativeId, toTraverseOps}
 import net.bstjohn.ad.generator.generators.DbGenerator
 import net.bstjohn.ad.generator.reader.ZipSnapshotReader
-import net.bstjohn.ad.generator.snapshots.{DatabaseEvolution, SnapshotDiff}
+import net.bstjohn.ad.generator.snapshots.DatabaseEvolution
+import net.bstjohn.ad.preprocessing.SnapshotDiff
 import org.apache.commons.io.FileUtils
 
 import java.io.File

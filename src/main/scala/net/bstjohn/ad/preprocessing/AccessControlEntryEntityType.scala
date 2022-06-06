@@ -6,7 +6,8 @@ import net.bstjohn.ad.generator.format.ace.AcePrincipalType
 sealed trait AccessControlEntryEntityType extends EnumEntry
 
 object AccessControlEntryEntityType
-  extends Enum[AccessControlEntryEntityType] {
+  extends Enum[AccessControlEntryEntityType]
+    with CirceEnum[AccessControlEntryEntityType] {
     val values: IndexedSeq[AccessControlEntryEntityType] = findValues
 
     case object User extends AccessControlEntryEntityType
