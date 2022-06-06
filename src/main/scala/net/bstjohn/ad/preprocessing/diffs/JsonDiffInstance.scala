@@ -1,4 +1,4 @@
-package net.bstjohn.ad.generator.snapshots.diffs
+package net.bstjohn.ad.preprocessing.diffs
 
 import com.softwaremill.diffx.{Diff, DiffContext, DiffResult, FieldPath}
 import io.circe.Json

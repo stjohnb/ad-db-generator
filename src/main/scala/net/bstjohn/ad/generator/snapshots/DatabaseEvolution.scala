@@ -4,7 +4,7 @@ import cats.effect.IO
 import cats.implicits.toTraverseOps
 
 case class DatabaseEvolution(
-  snapshots: Iterable[DbSnapshot]
+  snapshots: Seq[DbSnapshot]
 )
 
 object DatabaseEvolution {

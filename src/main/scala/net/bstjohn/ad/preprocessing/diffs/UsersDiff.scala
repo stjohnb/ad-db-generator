@@ -1,4 +1,4 @@
-package net.bstjohn.ad.generator.snapshots.diffs
+package net.bstjohn.ad.preprocessing.diffs
 
 import com.softwaremill.diffx.DiffResult
 import io.circe.{Decoder, Encoder}
@@ -6,12 +6,12 @@ import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import net.bstjohn.ad.generator.format.ace.Ace
 import net.bstjohn.ad.generator.format.users.User
 import net.bstjohn.ad.generator.snapshots.DbSnapshot
-import net.bstjohn.ad.generator.snapshots.diffs.UsersDiff.UserUpdated
+import net.bstjohn.ad.preprocessing.diffs.UsersDiff.UserUpdated
 
 case class UsersDiff(
-  created: Iterable[User],
-  updated: Iterable[UserUpdated],
-  deleted: Iterable[User]
+  created: Seq[User],
+  updated: Seq[UserUpdated],
+  deleted: Seq[User]
 )
 
 object UsersDiff {

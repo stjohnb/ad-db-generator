@@ -5,14 +5,12 @@ import io.circe.{Decoder, Encoder}
 import net.bstjohn.ad.generator.format.ace.Ace
 import net.bstjohn.ad.generator.generators.model.EpochSeconds
 
-import java.util.Date
-
 case class User(
-  AllowedToDelegate: Iterable[String],
+  AllowedToDelegate: Seq[String],
   PrimaryGroupSID: Option[String],
-  HasSIDHistory: Iterable[String],
-  SPNTargets: Iterable[String],
-  Aces: Iterable[Ace],
+  HasSIDHistory: Seq[String],
+  SPNTargets: Seq[String],
+  Aces: Seq[Ace],
   ObjectIdentifier: String,
   IsDeleted: Boolean,
   IsACLProtected: Boolean,

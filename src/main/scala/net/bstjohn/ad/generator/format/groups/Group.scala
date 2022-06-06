@@ -6,8 +6,8 @@ import net.bstjohn.ad.generator.format.ace.Ace
 import net.bstjohn.ad.generator.format.users.User
 
 case class Group(
-  Members: Iterable[GroupMember],
-  Aces: Iterable[Ace],
+  Members: Seq[GroupMember],
+  Aces: Seq[Ace],
   ObjectIdentifier: String,
   IsDeleted: Boolean,
   IsACLProtected: Boolean,
@@ -23,7 +23,7 @@ case class Group(
       Members = Members.toList :+ GroupMember.fromGroup(group))
 
 
-  def withGroupMembers(users: Iterable[User]): Group = {
+  def withGroupMembers(users: Seq[User]): Group = {
     copy(
       Members = Members.toList ++ users.map(GroupMember.fromUser)
     )
