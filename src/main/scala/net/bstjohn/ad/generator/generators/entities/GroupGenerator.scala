@@ -11,7 +11,7 @@ object GroupGenerator {
     domain: Domain,
     whenCreated: EpochSeconds,
     name: String = genString(),
-    members: Iterable[GroupMember] = List.empty
+    members: Seq[GroupMember] = List.empty
   ): Group = {
     Group(
       members,

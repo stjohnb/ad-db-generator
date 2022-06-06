@@ -4,11 +4,11 @@ import cats.effect.IO
 import cats.implicits.toTraverseOps
 
 case class DatabaseEvolution(
-  snapshots: Iterable[DbSnapshot]
+  snapshots: Seq[DbSnapshot]
 )
 
 object DatabaseEvolution {
-  def apply(snapshots: DbSnapshot*): DatabaseEvolution = {
+  def from(snapshots: DbSnapshot*): DatabaseEvolution = {
     DatabaseEvolution(snapshots)
   }
 

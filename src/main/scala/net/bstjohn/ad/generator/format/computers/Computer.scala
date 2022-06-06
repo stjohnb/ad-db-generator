@@ -6,9 +6,9 @@ import net.bstjohn.ad.generator.format.ace.Ace
 
 case class Computer(
   PrimaryGroupSID: Option[String],
-  AllowedToDelegate: Iterable[String],
-  AllowedToAct: Iterable[String],
-  HasSIDHistory: Iterable[Json],
+  AllowedToDelegate: Seq[String],
+  AllowedToAct: Seq[String],
+  HasSIDHistory: Seq[Json],
   Sessions: JsonObject,
   PrivilegedSessions: JsonObject,
   RegistrySessions: JsonObject,
@@ -17,7 +17,7 @@ case class Computer(
   DcomUsers: JsonObject,
   PSRemoteUsers: JsonObject,
   Status: Option[Json],
-  Aces: Iterable[Ace],
+  Aces: Seq[Ace],
   ObjectIdentifier: String,
   IsDeleted: Boolean,
   IsACLProtected: Boolean,

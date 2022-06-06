@@ -5,7 +5,7 @@ import io.circe.{Decoder, Encoder, Json, JsonObject}
 import net.bstjohn.ad.generator.format.ace.Ace
 
 case class Gpo(
-  Aces: Iterable[Ace],
+  Aces: Seq[Ace],
   ObjectIdentifier: String,
   IsDeleted: Boolean,
   IsACLProtected: Boolean,

@@ -1,16 +1,16 @@
-package net.bstjohn.ad.generator.snapshots.diffs
+package net.bstjohn.ad.preprocessing.diffs
 
 import io.circe.Encoder
 import io.circe.generic.semiauto.deriveEncoder
 import net.bstjohn.ad.generator.format.ace.Ace
 import net.bstjohn.ad.generator.format.groups.{Group, GroupMember}
 import net.bstjohn.ad.generator.snapshots.DbSnapshot
-import net.bstjohn.ad.generator.snapshots.diffs.GroupsDiff.GroupUpdated
+import net.bstjohn.ad.preprocessing.diffs.GroupsDiff.GroupUpdated
 
 case class GroupsDiff(
-  created: Iterable[Group],
-  updated: Iterable[GroupUpdated],
-  deleted: Iterable[Group],
+  created: Seq[Group],
+  updated: Seq[GroupUpdated],
+  deleted: Seq[Group],
 )
 
 object GroupsDiff {
@@ -18,22 +18,13 @@ object GroupsDiff {
   implicit val GroupDiffEncoder: Encoder[GroupsDiff] = deriveEncoder[GroupsDiff]
 
   case class GroupUpdated(
-    name: String,
+    group: Group,
     acesAdded: Set[Ace],
     membersAdded: Set[GroupMember]
   )
 
   object GroupUpdated {
-//    import DiffResultJsonFormat._
-
     implicit val GroupUpdatedEncoder: Encoder[GroupUpdated] = deriveEncoder[GroupUpdated]
-
-//    def apply(previous: Group, current: Group): GroupUpdated = {
-//      import com.softwaremill.diffx.generic.auto._
-//      import com.softwaremill.diffx._
-//
-//      GroupUpdated(previous, current, compare(previous, current))
-//    }
   }
 
   def from(
@@ -49,8 +40,7 @@ object GroupsDiff {
       initial.groups.data.find(g => g.ObjectIdentifier == update.ObjectIdentifier) match {
         case Some(previous) if previous.Aces.size < update.Aces.size || previous.Members.size < update.Members.size  =>
           Some(GroupUpdated(
-            name = if(previous.Properties.name == update.Properties.name) previous.Properties.name
-              else s"Changed: '${previous.Properties.name}' to '${update.Properties.name}' ",
+            update,
             acesAdded = update.Aces.toSet -- previous.Aces.toSet,
             membersAdded = update.Members.toSet -- previous.Members.toSet
           ))

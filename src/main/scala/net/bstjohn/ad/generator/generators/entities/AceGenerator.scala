@@ -15,7 +15,7 @@ object AceGenerator {
     )
   }
 
-  def generateAces(): Set[Ace] = {
-    (0 to Random.nextInt(10)).map(_ => generateAce()).toSet
+  def generateAces(): Seq[Ace] = {
+    (0 to Random.nextInt(10)).map(_ => generateAce())
   }
 }

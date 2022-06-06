@@ -6,7 +6,7 @@ import net.bstjohn.ad.generator.format.ace.Ace
 
 case class Container(
   ChildObjects: List[Json],
-  Aces: Iterable[Ace],
+  Aces: Seq[Ace],
   ObjectIdentifier: String,
   IsDeleted: Boolean,
   IsACLProtected: Boolean,

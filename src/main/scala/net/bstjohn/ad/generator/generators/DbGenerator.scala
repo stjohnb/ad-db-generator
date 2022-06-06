@@ -30,7 +30,7 @@ object DbGenerator {
 
     val s1 = DbSnapshot(domain, users1 ++ users2, List(group1, group2, domainAdminsGroup), computers, start)
 
-    DatabaseEvolution(s1)
+    DatabaseEvolution.from(s1)
   }
 
   def recreateRealDb(): DatabaseEvolution = {
@@ -82,7 +82,7 @@ object DbGenerator {
       .withUpdatedGroup(domainAdminManagers.withGroupMember(bstjohn))
       .timestamp(s6Timestamp)
 
-    DatabaseEvolution(s1, s2, s3, s4, s5, s6)
+    DatabaseEvolution.from(s1, s2, s3, s4, s5, s6)
   }
 
   def geographicallyNestedGroups(): DatabaseEvolution = {
@@ -114,6 +114,6 @@ object DbGenerator {
           .withGroupMember(belfastGroup))
 
 
-    DatabaseEvolution(s1, s2)
+    DatabaseEvolution.from(s1, s2)
   }
 }
