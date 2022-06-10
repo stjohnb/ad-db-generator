@@ -10,20 +10,20 @@ import net.bstjohn.ad.generator.format.groups.Groups
 import net.bstjohn.ad.generator.format.ous.Ous
 import net.bstjohn.ad.generator.format.users.Users
 import net.bstjohn.ad.generator.generators.model.EpochSeconds
-import net.bstjohn.ad.generator.snapshots.DbSnapshot
+import net.bstjohn.ad.generator.snapshots.{DbSnapshot, SnapshotLabel}
 import org.apache.commons.io.input.BOMInputStream
-import scala.jdk.CollectionConverters._
 
+import scala.jdk.CollectionConverters._
 import java.nio.file.Path
 import java.util.zip.{ZipEntry, ZipFile}
 
 object ZipSnapshotReader {
 
-  def read(path: Path): IO[Option[DbSnapshot]] = IO.defer {
-    read(path.toString)
+  def read(path: Path, label: SnapshotLabel): IO[Option[DbSnapshot]] = IO.defer {
+    read(path.toString, label)
   }
 
-  def read(path: String): IO[Option[DbSnapshot]] = IO.defer {
+  def read(path: String, label: SnapshotLabel): IO[Option[DbSnapshot]] = IO.defer {
     def fail(message: String) = throw new Exception(s"Failed to read $path - $message")
     val zipFile = new ZipFile(path)
     val entries = zipFile.entries.asScala.toList
@@ -64,7 +64,7 @@ object ZipSnapshotReader {
       } yield {
         val s = DbSnapshot(
           computers, containers, domains, gpos, groups, ous, users,
-          epoch = EpochSeconds(epoch)
+          epoch = EpochSeconds(epoch), label
         )
 
         Some(s)

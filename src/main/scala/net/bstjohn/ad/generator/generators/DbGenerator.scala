@@ -7,9 +7,10 @@ import net.bstjohn.ad.generator.generators.entities.DomainGenerator.generateDoma
 import net.bstjohn.ad.generator.generators.entities.GroupGenerator.generateGroup
 import net.bstjohn.ad.generator.generators.entities.UserGenerator.{generateUser, generateUsers}
 import net.bstjohn.ad.generator.generators.model.EpochSeconds
-import net.bstjohn.ad.generator.snapshots.{DatabaseEvolution, DbSnapshot}
+import net.bstjohn.ad.generator.snapshots.{DatabaseEvolution, DbSnapshot, SnapshotLabel}
 
 import java.util.{Calendar, GregorianCalendar}
+import scala.util.Random
 
 object DbGenerator {
   def generateNestedGroupsDb(): DatabaseEvolution = {
@@ -28,7 +29,7 @@ object DbGenerator {
       members = users2.map(GroupMember.fromUser)
         :+ GroupMember.fromGroup(group1))
 
-    val s1 = DbSnapshot(domain, users1 ++ users2, List(group1, group2, domainAdminsGroup), computers, start)
+    val s1 = DbSnapshot(domain, users1 ++ users2, List(group1, group2, domainAdminsGroup), computers, start, SnapshotLabel.Normal)
 
     DatabaseEvolution.from(s1)
   }
@@ -41,11 +42,11 @@ object DbGenerator {
     val domainAdminsGroup = generateGroup(domain, start, "DOMAIN ADMINS")
     val computers = generateComputers(50 to 100, domain, start, start.plusYears(2))
 
-    val s1 = DbSnapshot(domain, List.empty, List(domainAdminsGroup), computers, start)
-
     val userCreated = start.plusHours(1)
     val userLoggedOn = start.plusHours(1)
     val bstjohn = generateUser(domain, userCreated).loggedOn(userLoggedOn)
+    val s1 = DbSnapshot(domain, List(bstjohn), List(domainAdminsGroup), computers, start, SnapshotLabel.Normal)
+
     val groupManagers = generateGroup(domain, userCreated.plusMinutes(5), "Group managers",
       members = List(GroupMember.fromUser(bstjohn)))
     val s2 = s1
@@ -68,9 +69,10 @@ object DbGenerator {
       .timestamp(agentsEnd.plusDays(1))
 
     val s5Start = agentsEnd.plusYears(1)
-    val domainAdminManagers = generateGroup(domain, s5Start, "Domain admin managers",
-      members = List(GroupMember.fromUser(bstjohn))
-    ).withAces(Ace.forGroup(groupManagers, RightName.AddSelf))
+    val domainAdminManagers =
+      generateGroup(domain, s5Start, "Domain admin managers")
+        .withAces(Ace.forGroup(groupManagers, RightName.AddSelf))
+        .withGroupMembers(Random.shuffle(csAgents).take(3))
 
     val s5 = s4
       .withUpdatedGroup(domainAdminManagers)
@@ -80,7 +82,9 @@ object DbGenerator {
     val s6Timestamp = s5Start.plusMonths(2)
     val s6 = s5
       .withUpdatedGroup(domainAdminManagers.withGroupMember(bstjohn))
+      .withUpdatedGroup(domainAdminsGroup.withGroupMember(bstjohn))
       .timestamp(s6Timestamp)
+      .withLabels(SnapshotLabel.Malicious)
 
     DatabaseEvolution.from(s1, s2, s3, s4, s5, s6)
   }
@@ -96,22 +100,28 @@ object DbGenerator {
     val p1End = start.plusYears(1)
     val initialUsers = generateUsers(10 to 50, domain, start, p1End)
     val allUsersGroup = generateGroup(domain, start.plusMonths(1)).withGroupMembers(initialUsers)
-    val s1 = DbSnapshot(domain, initialUsers, List(domainAdminsGroup, allUsersGroup), computers, start)
+    val managersGroup = generateGroup(domain, start.plusMonths(1)).withGroupMembers(Random.shuffle(initialUsers).take(3))
+    val s1 = DbSnapshot(domain, initialUsers, List(domainAdminsGroup, allUsersGroup, managersGroup), computers, start, SnapshotLabel.Normal)
 
     val p2End = p1End.plusYears(1)
     val dublinGroup = generateGroup(domain, p1End)
       .withGroupMembers(initialUsers)
-    val belfastUsers = generateUsers(50 to 100, domain, p1End, p2End)
+
+    val belfastUsers = generateUsers(5 to 10, domain, p1End, p2End)
     val belfastGroup = generateGroup(domain, p1End)
       .withGroupMembers(belfastUsers)
+    val belfastComputers = generateComputers(50 to 60, domain, start, start.plusYears(2))
+
     val s2 = s1
       .withUpdatedUsers(belfastUsers)
       .withUpdatedGroup(dublinGroup)
       .withUpdatedGroup(belfastGroup)
+      .withUpdatedGroup(managersGroup.withGroupMembers(Random.shuffle(belfastUsers).take(1)))
       .withUpdatedGroup(
         allUsersGroup
           .withGroupMember(dublinGroup)
           .withGroupMember(belfastGroup))
+      .withNewComputers(belfastComputers)
 
 
     DatabaseEvolution.from(s1, s2)

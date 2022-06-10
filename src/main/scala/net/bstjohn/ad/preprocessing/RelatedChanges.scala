@@ -2,7 +2,6 @@ package net.bstjohn.ad.preprocessing
 
 import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
-import net.bstjohn.ad.generator.format.ace.Ace
 import net.bstjohn.ad.generator.format.users.User
 import net.bstjohn.ad.preprocessing.diffs.GroupsDiff
 
