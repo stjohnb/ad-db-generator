@@ -24,7 +24,8 @@ case class DbSnapshot(
   groups: Groups,
   ous: Ous,
   users: Users,
-  epoch: EpochSeconds
+  epoch: EpochSeconds,
+  label: SnapshotLabel
 ) {
   def withUpdatedGroup(group: Group): DbSnapshot =
     copy(groups = groups.copy(
@@ -37,7 +38,12 @@ case class DbSnapshot(
   def withUpdatedUsers(users: Seq[User]): DbSnapshot =
     users.foldLeft(this)((s, u) => s.withUpdatedUser(u))
 
+  def withNewComputers(computers: Seq[Computer]): DbSnapshot =
+    this.copy(computers = this.computers.copy(data = this.computers.data  ++ computers))
+
   def timestamp(epoch: EpochSeconds): DbSnapshot = this.copy(epoch = epoch)
+
+  def withLabels(label: SnapshotLabel): DbSnapshot = this.copy(label = label)
 
 }
 
@@ -47,7 +53,8 @@ object DbSnapshot {
     users: Seq[User],
     groups: Seq[Group],
     computers: Seq[Computer],
-    epoch: EpochSeconds
+    epoch: EpochSeconds,
+    label: SnapshotLabel
   ): DbSnapshot = {
     DbSnapshot(
       Computers(computers),
@@ -57,7 +64,8 @@ object DbSnapshot {
       Groups(groups),
       Ous(List.empty),
       Users(users),
-      epoch
+      epoch,
+      label
     )
   }
 
