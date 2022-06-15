@@ -25,11 +25,14 @@ case class DbSnapshot(
   ous: Ous,
   users: Users,
   epoch: EpochSeconds,
-  label: SnapshotLabel
+  lateralMovementIds: Seq[String]
 ) {
   def withUpdatedGroup(group: Group): DbSnapshot =
     copy(groups = groups.copy(
         data = groups.data.toList.filter(g => g.ObjectIdentifier != group.ObjectIdentifier) :+ group))
+
+  def withUpdatedGroups(groups: Seq[Group]): DbSnapshot =
+    groups.foldLeft(this)((s, g) => s.withUpdatedGroup(g))
 
   def withUpdatedUser(user: User): DbSnapshot =
     copy(users = users.copy(
@@ -41,9 +44,11 @@ case class DbSnapshot(
   def withNewComputers(computers: Seq[Computer]): DbSnapshot =
     this.copy(computers = this.computers.copy(data = this.computers.data  ++ computers))
 
-  def timestamp(epoch: EpochSeconds): DbSnapshot = this.copy(epoch = epoch)
+  def timestamp(epoch: EpochSeconds): DbSnapshot =
+    this.copy(epoch = epoch)
 
-  def withLabels(label: SnapshotLabel): DbSnapshot = this.copy(label = label)
+  def withLateralMovementIds(lateralMovementIds: Seq[String]): DbSnapshot =
+    this.copy(lateralMovementIds = lateralMovementIds)
 
 }
 
@@ -54,7 +59,7 @@ object DbSnapshot {
     groups: Seq[Group],
     computers: Seq[Computer],
     epoch: EpochSeconds,
-    label: SnapshotLabel
+    lateralMovementIds: Seq[String]
   ): DbSnapshot = {
     DbSnapshot(
       Computers(computers),
@@ -65,7 +70,7 @@ object DbSnapshot {
       Ous(List.empty),
       Users(users),
       epoch,
-      label
+      lateralMovementIds
     )
   }
 
@@ -102,6 +107,10 @@ object DbSnapshot {
 
     out.putNextEntry(new ZipEntry(s"${snapshot.epoch.toDateString}_users.json"))
     out.write(snapshot.users.asJson.spaces2.getBytes)
+    out.closeEntry()
+
+    out.putNextEntry(new ZipEntry(s"${snapshot.epoch.toDateString}_lateral_movement_ids.json"))
+    out.write(snapshot.lateralMovementIds.asJson.spaces2.getBytes)
     out.closeEntry()
 
     out.close()

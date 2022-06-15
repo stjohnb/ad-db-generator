@@ -6,6 +6,7 @@ import cats.effect.IO
 object Main extends IOApp.Simple {
 
   def run: IO[Unit] = for {
-    _ <- Processes.generateDiffs()
-    _ <- Processes.produceSnapshots()
+    _ <- Processes.generateScenarioSnapshots
+    _ <- Processes.generateTestEnvironmentDiffs
+    _ <- Processes.generateScenarioDiffs
   } yield ()}

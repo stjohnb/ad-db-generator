@@ -12,6 +12,7 @@ lazy val root = (project in file(".")).settings(
     "org.typelevel" %% "cats-effect-std" % "3.3.11",
     "io.circe" %% "circe-core" % circeVersion,
     "commons-io" % "commons-io" % "2.6",
+    "org.apache.commons" % "commons-csv" % "1.9.0",
     "io.circe" %% "circe-generic" % circeVersion,
     "io.circe" %% "circe-parser" % circeVersion,
     compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
