@@ -93,26 +93,33 @@ object Scenarios {
       .withUpdatedGroup(csAgentsGroup.withGroupMembers(csAgents))
       .timestamp(s4Timestamp)
 
-    val s5Start = s4Timestamp.plusYears(1)
+    val s5Start = s4Timestamp.plusMonths(1)
+    val newAdmin = generateUser(domain, s5Start)
+    val s5 = s4
+      .withUpdatedGroup(domainAdminsGroup.withGroupMember(newAdmin))
+      .withUpdatedUser(newAdmin)
+      .timestamp(s5Start)
+
+    val s6Start = s5Start.plusYears(1)
     val domainAdminManagers =
-      generateGroup(domain, s5Start, "Domain admin managers")
+      generateGroup(domain, s6Start, "Domain admin managers")
         .withAces(Ace(groupManagers.ObjectIdentifier, RightName.AddSelf))
         .withGroupMembers(shuffle(csAgents).take(3))
 
-    val s5Timestamp = s5Start.plusDays(10)
-    val s5 = s4
+    val s6Timestamp = s6Start.plusDays(10)
+    val s6 = s5
       .withUpdatedGroup(domainAdminManagers)
       .withUpdatedGroup(domainAdminsGroup.withAces(Ace(domainAdminManagers.ObjectIdentifier, RightName.GenericAll)))
-      .timestamp(s5Timestamp)
+      .timestamp(s6Timestamp)
 
-    val s6Timestamp = s5Timestamp.plusMonths(2)
-    val s6 = s5
+    val s7Timestamp = s6Timestamp.plusMonths(2)
+    val s7 = s6
       .withUpdatedGroup(domainAdminManagers.withGroupMember(attacker))
       .withUpdatedGroup(domainAdminsGroup.withGroupMember(attacker))
       .withLateralMovementIds(Seq(attacker.ObjectIdentifier))
-      .timestamp(s6Timestamp)
+      .timestamp(s7Timestamp)
 
-    DatabaseEvolution.from(s1, s2, s3, s4, s5, s6)
+    DatabaseEvolution.from(s1, s2, s3, s4, s5, s6, s7)
   }
 
   def geographicallyNestedGroups(): DatabaseEvolution = {

@@ -2,19 +2,20 @@ package net.bstjohn.ad.generator.generators.model
 
 import java.text.SimpleDateFormat
 import java.util.Date
+import scala.util.Random
 
 case class EpochSeconds(
   value: Long
 ) {
 
   def toDateString: String = {
-    val d = new Date(value)
+    val d = new Date(value * 1000L)
     val f = new SimpleDateFormat("yyyyMMddHHmmss")
 
     f.format(d)
   }
 
-  def plusSeconds(seconds: Int): EpochSeconds = EpochSeconds(value + seconds.toLong)
+  def plusSeconds(seconds: Int): EpochSeconds = EpochSeconds(value + seconds.toLong + Random.nextLong(60L))
 
   def plusMinutes(minutes: Int): EpochSeconds = this.plusSeconds(minutes * 60)
 
@@ -30,5 +31,5 @@ case class EpochSeconds(
 }
 
 object EpochSeconds {
-  def fromDate(date: Date) = EpochSeconds(date.getTime)
+  def fromDate(date: Date) = EpochSeconds(date.getTime / 1000L)
 }

@@ -25,8 +25,8 @@ object DatabaseEvolution {
   }
 
   def writeToDisk(db: DatabaseEvolution, path: String): IO[Unit] = {
-    db.snapshots.map(s =>
+    db.snapshots.map { s =>
       DbSnapshot.writeToDisk(s, path)
-    ).sequence.map(_ => ())
+    }.sequence.map(_ => ())
   }
 }
