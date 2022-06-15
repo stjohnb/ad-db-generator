@@ -26,7 +26,7 @@ object SnapshotDiff {
     val groupDiffs = GroupsDiff.from(initial, finalSnapshot)
 
     val userChanges = finalSnapshot.users.data.map(u =>
-      UserChanges(u, groupDiffs, initialRelations, finalRelations, finalSnapshot.lateralMovementIds.contains(u.ObjectIdentifier))
+      UserChanges(u, groupDiffs, initialRelations, finalRelations, finalSnapshot.lateralMovementIds)
     )
 
     SnapshotDiff(userDiffs, groupDiffs, userChanges)
@@ -39,6 +39,5 @@ object SnapshotDiff {
   private def writeToFile(contents: String, path: String): IO[Unit] = IO.delay {
     val pw = new PrintWriter(new File(path))
     try pw.write(contents) finally pw.close()
-    println(s"Diff written to $path")
   }
 }

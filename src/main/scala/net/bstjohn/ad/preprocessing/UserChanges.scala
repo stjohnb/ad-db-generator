@@ -3,6 +3,7 @@ package net.bstjohn.ad.preprocessing
 import cats.effect.IO
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder}
+import net.bstjohn.ad.generator.format.common.EntityId.{GroupId, UserId}
 import net.bstjohn.ad.generator.format.users.User
 import net.bstjohn.ad.generator.generators.entities.GroupGenerator
 import net.bstjohn.ad.preprocessing.diffs.GroupsDiff
@@ -11,7 +12,8 @@ import org.apache.commons.csv.{CSVFormat, CSVPrinter}
 import java.io.FileWriter
 
 case class UserChanges(
-  userId: String,
+  userId: UserId,
+  userName: String,
   groupsJoined: Int,
   groupsInherited: Int,
   acesReceived: Int,
@@ -21,14 +23,15 @@ case class UserChanges(
   isLateralMovement: Boolean
 ) {
   def csvRow: Seq[String] = Seq(
-    userId,
+    userId.value,
+    userName,
     groupsJoined.toString,
     groupsInherited.toString,
     acesReceived.toString,
     acesModified.toString,
     if(joinedDomainAdminsGroup) "1" else "0",
     if(userIsKerboroastable) "1" else "0",
-    if(isLateralMovement) "1" else "0",
+    if(isLateralMovement) "yes-lat" else "no-lat",
   )
 }
 
@@ -39,6 +42,7 @@ object UserChanges {
 
   val CsvHeader = Seq(
     "userId",
+    "userName",
     "groupsJoined",
     "groupsInherited",
     "acesReceived",
@@ -53,28 +57,29 @@ object UserChanges {
     groupDiffs: GroupsDiff,
     initialRelations: InvertedRelations,
     finalRelations: InvertedRelations,
-    isLateralMovement: Boolean
+    lateralMovementIds: Seq[UserId]
   ): UserChanges = {
     val groupsJoined: Seq[GroupsDiff.GroupUpdated] = groupDiffs.updated
-      .filter(_.membersAdded.exists(_.ObjectIdentifier == user.ObjectIdentifier))
+      .filter(_.membersAdded.exists(_.ObjectIdentifier == user.ObjectIdentifier.value))
 
     val groupsInherited = groupsJoined.flatMap(g =>
       allGroupsRec(g.group.ObjectIdentifier, finalRelations.groupMemberships, Seq.empty))
 
-    val acesGained = initialRelations.accessControlEntries.filter(ace => groupsInherited.contains(ace.sourceId))
+    val acesGained = initialRelations.accessControlEntries.filter(ace => groupsInherited.exists(gid => gid.value == ace.sourceId))
 
-    val initialUserAces = initialRelations.accessControlEntries.filter(_.sourceId == user.ObjectIdentifier).toSet
-    val updatedUserAces = finalRelations.accessControlEntries.filter(_.sourceId == user.ObjectIdentifier).toSet
+    val initialUserAces = initialRelations.accessControlEntries.filter(e => e.sourceId == user.ObjectIdentifier.value).toSet
+    val updatedUserAces = finalRelations.accessControlEntries.filter(e => e.sourceId == user.ObjectIdentifier.value).toSet
 
     UserChanges(
-      userId = user.Properties.name,
+      userId = user.ObjectIdentifier,
+      userName = user.Properties.name,
       groupsJoined = groupsJoined.size,
       groupsInherited = groupsInherited.size,
       acesReceived = acesGained.size,
       acesModified = (updatedUserAces -- initialUserAces).size,
       joinedDomainAdminsGroup = groupsJoined.exists(_.group.Properties.name == GroupGenerator.DomainAdminsGroupName),
       userIsKerboroastable = user.Properties.dontreqpreauth.contains(true),
-      isLateralMovement
+      isLateralMovement = lateralMovementIds.contains(user.ObjectIdentifier)
     )
   }
 
@@ -86,10 +91,9 @@ object UserChanges {
         printer.printRecord(change.csvRow:_*)
       }
     } finally if (printer != null) printer.close()
-    println(s"Changes written to $path")
   }
 
-  private def allGroupsRec(groupId: String, groupsMap: Map[String, Seq[String]], acc: Seq[String]): Seq[String] = {
+  private def allGroupsRec(groupId: GroupId, groupsMap: Map[GroupId, Seq[GroupId]], acc: Seq[GroupId]): Seq[GroupId] = {
     groupsMap.get(groupId) match {
       case None =>
         acc

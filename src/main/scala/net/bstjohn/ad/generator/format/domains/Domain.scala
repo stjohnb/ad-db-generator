@@ -19,24 +19,9 @@ case class Domain(
   def withDomainAdminsGroup(group: Group): Domain = {
     copy(
       Aces = Aces ++ List(
-        Ace(
-          PrincipalSID = group.ObjectIdentifier,
-          PrincipalType = AcePrincipalType.Group,
-          RightName = RightName.WriteDacl,
-          IsInherited = false
-        ),
-        Ace(
-          PrincipalSID = group.ObjectIdentifier,
-          PrincipalType = AcePrincipalType.Group,
-          RightName = RightName.WriteOwner,
-          IsInherited = false
-        ),
-        Ace(
-          PrincipalSID = group.ObjectIdentifier,
-          PrincipalType = AcePrincipalType.Group,
-          RightName = RightName.AllExtendedRights,
-          IsInherited = false
-        ),
+        Ace(group.ObjectIdentifier, RightName.WriteDacl),
+        Ace(group.ObjectIdentifier, RightName.WriteOwner),
+        Ace(group.ObjectIdentifier, RightName.AllExtendedRights),
       )
     )
   }

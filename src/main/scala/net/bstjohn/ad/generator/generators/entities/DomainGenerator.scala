@@ -3,13 +3,14 @@ package net.bstjohn.ad.generator.generators.entities
 import net.bstjohn.ad.generator.format.domains.{Domain, DomainProperties}
 import net.bstjohn.ad.generator.generators.common.CommonGenerators.{genBoolean, genJsonObject, genOption, genSid, genString}
 import net.bstjohn.ad.generator.generators.model.EpochSeconds
+import net.bstjohn.ad.generator.generators.model.NameGenerator.{generateCompanyName, generateTLD}
 
 object DomainGenerator {
   def generateDomain(
     whenCreated: EpochSeconds
   ): Domain = {
     val sid = genSid()
-    val name = genString()
+    val name = s"${generateCompanyName()}.${generateTLD()}"
 
     Domain(
       List.empty,

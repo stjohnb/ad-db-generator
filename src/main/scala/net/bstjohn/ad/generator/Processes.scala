@@ -2,7 +2,8 @@ package net.bstjohn.ad.generator
 
 import cats.effect.IO
 import cats.implicits.{catsSyntaxApplicativeId, toTraverseOps}
-import net.bstjohn.ad.generator.generators.DbGenerator
+import net.bstjohn.ad.generator.format.common.EntityId.UserId
+import net.bstjohn.ad.generator.generators.Scenarios
 import net.bstjohn.ad.generator.reader.ZipSnapshotReader
 import net.bstjohn.ad.generator.snapshots.DatabaseEvolution
 import net.bstjohn.ad.preprocessing.{SnapshotDiff, UserChanges}
@@ -20,9 +21,9 @@ object Processes {
   val generateScenarioSnapshots: IO[Unit] = {
     for {
       _ <- recreateDir(new File(SnapshotsOutputDir))
-      _ <- DatabaseEvolution.writeToDisk(DbGenerator.recreateRealDb(), s"$SnapshotsOutputDir/real")
-      _ <- DatabaseEvolution.writeToDisk(DbGenerator.generateNestedGroupsDb(), s"$SnapshotsOutputDir/nested")
-      _ <- DatabaseEvolution.writeToDisk(DbGenerator.geographicallyNestedGroups(), s"$SnapshotsOutputDir/geographic")
+      _ <- DatabaseEvolution.writeToDisk(Scenarios.recreateRealDb(), s"$SnapshotsOutputDir/real")
+      _ <- DatabaseEvolution.writeToDisk(Scenarios.nestedGroups(), s"$SnapshotsOutputDir/nested")
+      _ <- DatabaseEvolution.writeToDisk(Scenarios.geographicallyNestedGroups(), s"$SnapshotsOutputDir/geographic")
     } yield ()
   }
 
@@ -30,7 +31,7 @@ object Processes {
     val Root = "test-environment-snapshots"
     val scenarioName = "test-environment"
 
-    val timestamps: Seq[(String, Option[Seq[String]])] = List(
+    val timestamps: Seq[(String, Option[Seq[UserId]])] = List(
       ("20220506180850", Some(Seq.empty)),
       ("20220506183026", Some(Seq.empty)),
       ("20220507084916", Some(Seq.empty)),
@@ -41,8 +42,8 @@ object Processes {
       ("20220509121320", Some(Seq.empty)),
       ("20220509121936", Some(Seq.empty)),
       ("20220509125013", Some(Seq.empty)),
-      ("20220509135532", Some(Seq.empty)),
-      ("20220520162651", Some(Seq("S-1-5-21-2767398339-3403964288-3041356156-1114"))),
+//      ("20220509135532", Some(Seq.empty)),
+      ("20220520162651", Some(Seq(UserId("S-1-5-21-2767398339-3403964288-3041356156-1114")))),
     )
 
     for {
@@ -66,7 +67,10 @@ object Processes {
       .filter(_.toString != SnapshotsOutputDir)
 
     scenarios.map { scenario =>
-      val files = Files.walk(scenario).iterator().asScala.toList.filter(_.toString.endsWith("zip")).sliding(2).toList
+      val files = Files.walk(scenario).iterator().asScala.toList
+        .filter(_.toString.endsWith("zip"))
+        .sortBy(p => p.getFileName.toString)
+        .sliding(2).toList
 
       val scenarioName = scenario.getFileName.toString
 
@@ -84,8 +88,8 @@ object Processes {
 
   private def produceDiff(
     scenarioName: String,
-    initialName: (Path, Option[Seq[String]]),
-    updatedName: (Path, Option[Seq[String]])
+    initialName: (Path, Option[Seq[UserId]]),
+    updatedName: (Path, Option[Seq[UserId]])
   ): IO[Unit] = {
     for {
       initial <- ZipSnapshotReader.read(initialName._1, initialName._2)

@@ -13,14 +13,14 @@ object GroupMember {
 
   def fromGroup(group: Group): GroupMember = {
     GroupMember(
-      group.ObjectIdentifier,
+      group.ObjectIdentifier.value,
       GroupMemberType.Group
     )
   }
 
   def fromUser(user: User): GroupMember = {
     GroupMember(
-      user.ObjectIdentifier,
+      user.ObjectIdentifier.value,
       GroupMemberType.User
     )
   }

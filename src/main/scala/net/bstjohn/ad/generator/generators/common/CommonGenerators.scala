@@ -1,12 +1,17 @@
 package net.bstjohn.ad.generator.generators.common
 
 import io.circe.JsonObject
+import net.bstjohn.ad.generator.format.common.EntityId.{GroupId, UserId}
 
 import java.util.UUID
 import scala.util.Random
 
 object CommonGenerators {
   def genSid(): String = genString()
+
+  def genGroupId(): GroupId = GroupId(genSid())
+
+  def genUserId(): UserId = UserId(genSid())
 
   def genString(): String = UUID.randomUUID().toString
 
