@@ -2,7 +2,6 @@ package net.bstjohn.ad.generator.generators.model
 
 import java.text.SimpleDateFormat
 import java.util.Date
-import scala.util.Random
 
 case class EpochSeconds(
   value: Long
@@ -15,19 +14,19 @@ case class EpochSeconds(
     f.format(d)
   }
 
-  def plusSeconds(seconds: Long): EpochSeconds = EpochSeconds(value + seconds)
+  def plusSeconds(seconds: Int): EpochSeconds = EpochSeconds(value + seconds.toLong)
 
-  def plusMinutes(minutes: Long): EpochSeconds = this.plusSeconds(minutes * 60)
+  def plusMinutes(minutes: Int): EpochSeconds = this.plusSeconds(minutes * 60)
 
-  def plusHours(hours: Long): EpochSeconds = this.plusSeconds(hours * 60 * 60)
+  def plusHours(hours: Int): EpochSeconds = this.plusSeconds(hours * 60 * 60)
 
-  def plusDays(days: Long): EpochSeconds = this.plusSeconds(days * 24 * 60 * 60)
+  def plusDays(days: Int): EpochSeconds = this.plusSeconds(days * 24 * 60 * 60)
 
-  def plusWeeks(weeks: Long): EpochSeconds = this.plusSeconds(weeks * 7 * 24 * 60 * 60)
+  def plusWeeks(weeks: Int): EpochSeconds = this.plusSeconds(weeks * 7 * 24 * 60 * 60)
 
-  def plusMonths(months: Long): EpochSeconds = this.plusSeconds(months * 28 * 24 * 60 * 60)
+  def plusMonths(months: Int): EpochSeconds = this.plusSeconds(months * 28 * 24 * 60 * 60)
 
-  def plusYears(years: Long): EpochSeconds = this.plusSeconds(years * 365 * 24 * 60 * 60)
+  def plusYears(years: Int): EpochSeconds = this.plusSeconds(years * 365 * 24 * 60 * 60)
 }
 
 object EpochSeconds {

@@ -108,6 +108,7 @@ object Processes {
   private def recreateDir(dir: File): IO[Unit] = IO.delay {
     FileUtils.deleteDirectory(dir)
     dir.mkdirs()
+    ()
   }
 
 }

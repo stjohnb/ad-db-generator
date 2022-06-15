@@ -1,9 +1,7 @@
 package net.bstjohn.ad.generator.format.computers
 
-import com.softwaremill.diffx.Diff
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder, Json}
-import net.bstjohn.ad.preprocessing.diffs.JsonDiffInstance
 
 case class ComputerProperties(
   domain: String,
@@ -29,9 +27,9 @@ object ComputerProperties {
   implicit val ComputerPropertiesDecoder: Decoder[ComputerProperties] = deriveDecoder[ComputerProperties]
   implicit val ComputerPropertiesEncoder: Encoder[ComputerProperties] = deriveEncoder[ComputerProperties].mapJson(_.deepDropNullValues)
 
-  implicit val jsonOptionDiffInstance: Diff[Option[Json]] = JsonDiffInstance.diffForOptionJson(implicitly[Diff[String]])
-  implicit val jsonOptionListDiffInstance: Diff[Option[List[Json]]] = JsonDiffInstance.diffForOptionListJson(implicitly[Diff[String]])
+//  implicit val jsonOptionDiffInstance: Diff[Option[Json]] = JsonDiffInstance.diffForOptionJson(implicitly[Diff[String]])
+//  implicit val jsonOptionListDiffInstance: Diff[Option[List[Json]]] = JsonDiffInstance.diffForOptionListJson(implicitly[Diff[String]])
 
-  implicit val ComputerPropertiesDiff = Diff.derived[ComputerProperties]
+//  implicit val ComputerPropertiesDiff = Diff.derived[ComputerProperties]
 
 }

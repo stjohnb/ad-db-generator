@@ -4,6 +4,7 @@ import net.bstjohn.ad.generator.format.ace.{Ace, RightName}
 import net.bstjohn.ad.generator.format.common.EntityId.UserId
 import net.bstjohn.ad.generator.format.groups.GroupMember
 import net.bstjohn.ad.generator.format.users.User
+import net.bstjohn.ad.generator.generators.common.CommonGenerators.genUserId
 import net.bstjohn.ad.generator.generators.entities.ComputerGenerator.{generateComputer, generateComputers}
 import net.bstjohn.ad.generator.generators.entities.DomainGenerator.generateDomain
 import net.bstjohn.ad.generator.generators.entities.GroupGenerator.{generateDomainAdminsGroup, generateGroup}
@@ -49,7 +50,7 @@ object Scenarios {
     DatabaseEvolution.from(s1, s2)
   }
 
-  def recreateRealDb(): DatabaseEvolution = {
+  def recreateRealDb(attackerId: UserId = genUserId()): DatabaseEvolution = {
     val date = new GregorianCalendar(2005, Calendar.FEBRUARY, 11).getTime
 
     val start = EpochSeconds.fromDate(date)
@@ -59,7 +60,7 @@ object Scenarios {
 
     val userCreated = start.plusHours(1)
     val userLoggedOn = start.plusHours(1)
-    val attacker = kerboroastableUser(domain, userCreated).loggedOn(userLoggedOn)
+    val attacker = kerboroastableUser(domain, userCreated, attackerId).loggedOn(userLoggedOn)
     val s1Timestamp = start.plusHours(2)
 
     val s1 = DbSnapshot(

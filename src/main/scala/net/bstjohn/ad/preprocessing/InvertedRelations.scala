@@ -1,7 +1,7 @@
 package net.bstjohn.ad.preprocessing
 
 import net.bstjohn.ad.generator.format.common.EntityId.GroupId
-import net.bstjohn.ad.generator.format.groups.{Group, GroupMember, GroupMemberType}
+import net.bstjohn.ad.generator.format.groups.{GroupMember, GroupMemberType}
 import net.bstjohn.ad.generator.snapshots.DbSnapshot
 
 case class InvertedRelations(

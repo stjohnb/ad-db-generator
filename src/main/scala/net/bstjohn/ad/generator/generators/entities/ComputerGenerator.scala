@@ -46,7 +46,7 @@ object ComputerGenerator {
     (0 to count).map { _ =>
       generateComputer(
         domain,
-        createdAfter.plusSeconds(Random.nextLong(createdBefore.value - createdAfter.value)))
+        EpochSeconds(createdAfter.value + Random.nextLong(createdBefore.value - createdAfter.value)))
     }
   }
 
