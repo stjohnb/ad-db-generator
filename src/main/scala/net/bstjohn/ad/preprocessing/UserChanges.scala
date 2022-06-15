@@ -24,14 +24,14 @@ case class UserChanges(
 ) {
   def csvRow: Seq[String] = Seq(
     userId.value,
-    userName,
-    s"groupsJoined-$groupsJoined",
-    s"groupsInherited-$groupsInherited",
-    s"acesReceived-$acesReceived",
-    s"acesModified-$acesModified",
+//    userName,
+    s"$groupsJoined",
+    s"$groupsInherited",
+    s"$acesReceived",
+    s"$acesModified",
     if(joinedDomainAdminsGroup) "1" else "0",
     if(userIsKerboroastable) "1" else "0",
-    if(isLateralMovement) "yes-lat" else "no-lat",
+    if(isLateralMovement) "1" else "0",
   )
 }
 
@@ -42,7 +42,7 @@ object UserChanges {
 
   val CsvHeader = Seq(
     "userId",
-    "userName",
+//    "userName",
     "groupsJoined",
     "groupsInherited",
     "acesReceived",
