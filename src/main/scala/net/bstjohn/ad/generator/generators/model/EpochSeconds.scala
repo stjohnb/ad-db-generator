@@ -25,6 +25,8 @@ case class EpochSeconds(
 
   def plusDays(days: Long): EpochSeconds = this.plusSeconds(days * 24 * 60 * 60)
 
+  def plusWeeks(weeks: Long): EpochSeconds = this.plusSeconds(weeks * 7 * 24 * 60 * 60)
+
   def plusMonths(months: Long): EpochSeconds = this.plusSeconds(months * 28 * 24 * 60 * 60)
 
   def plusYears(years: Long): EpochSeconds = this.plusSeconds(years * 365 * 24 * 60 * 60)

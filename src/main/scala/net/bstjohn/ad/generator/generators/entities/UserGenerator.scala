@@ -27,6 +27,23 @@ object UserGenerator {
     )
   }
 
+  def kerboroastableUser(
+    domain: Domain,
+    whenCreated: EpochSeconds
+  ): User = {
+    User(
+      List.empty,
+      None,
+      List.empty,
+      List.empty,
+      generateAces(),
+      genSid(),
+      genBoolean(),
+      genBoolean(),
+      generateUserProperties(domain, whenCreated, dontreqpreauth = Some(true))
+    )
+  }
+
   def generateUsers(
     randomCount: Range,
     domain: Domain,
@@ -36,11 +53,18 @@ object UserGenerator {
     val count = Random.nextInt(randomCount.end - randomCount.start) + randomCount.start
 
     (0 to count).map { _ =>
-      generateUser(domain, createdAfter.plusSeconds(Random.nextLong(createdBefore.value - createdAfter.value)))
+      val created = createdAfter.plusSeconds(Random.nextLong(createdBefore.value - createdAfter.value))
+
+      generateUser(domain, created)
+        .loggedOn(created)
     }
   }
 
-  def generateUserProperties(domain: Domain, whenCreated: EpochSeconds): UserProperties = {
+  def generateUserProperties(
+    domain: Domain,
+    whenCreated: EpochSeconds,
+    dontreqpreauth: Option[Boolean] = Some(false)
+  ): UserProperties = {
     val name = generateName()
 
     UserProperties(
@@ -52,7 +76,7 @@ object UserGenerator {
       description = genOption().map(_ => genString()),
       whencreated = Some(whenCreated.value),
       sensitive = genOption().map(_ => genBoolean()),
-      dontreqpreauth = genOption().map(_ => genBoolean()),
+      dontreqpreauth = dontreqpreauth,
       passwordnotreqd = genOption().map(_ => genBoolean()),
       unconstraineddelegation = genOption().map(_ => genBoolean()),
       pwdneverexpires = genOption().map(_ => genBoolean()),

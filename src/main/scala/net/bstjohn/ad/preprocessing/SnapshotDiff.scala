@@ -11,7 +11,7 @@ import java.io.{File, PrintWriter}
 case class SnapshotDiff (
   changedUsers: UsersDiff,
   changedGroups: GroupsDiff,
-  allRelatedChanges: Seq[RelatedChanges]
+  userChanges: Seq[UserChanges]
 )
 
 object SnapshotDiff {
@@ -25,9 +25,11 @@ object SnapshotDiff {
     val userDiffs = UsersDiff.from(initial, finalSnapshot)
     val groupDiffs = GroupsDiff.from(initial, finalSnapshot)
 
-    val relatedChanges = finalSnapshot.users.data.map(RelatedChanges(_, groupDiffs, initialRelations, finalRelations))
+    val userChanges = finalSnapshot.users.data.map(u =>
+      UserChanges(u, groupDiffs, initialRelations, finalRelations, finalSnapshot.lateralMovementIds.contains(u.ObjectIdentifier))
+    )
 
-    SnapshotDiff(userDiffs, groupDiffs, relatedChanges)
+    SnapshotDiff(userDiffs, groupDiffs, userChanges)
   }
 
   def write(diff: SnapshotDiff, path: String): IO[Unit] = {

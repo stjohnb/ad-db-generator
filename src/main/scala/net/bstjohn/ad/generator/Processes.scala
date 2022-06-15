@@ -4,59 +4,104 @@ import cats.effect.IO
 import cats.implicits.{catsSyntaxApplicativeId, toTraverseOps}
 import net.bstjohn.ad.generator.generators.DbGenerator
 import net.bstjohn.ad.generator.reader.ZipSnapshotReader
-import net.bstjohn.ad.generator.snapshots.{DatabaseEvolution, SnapshotLabel}
-import net.bstjohn.ad.preprocessing.SnapshotDiff
+import net.bstjohn.ad.generator.snapshots.DatabaseEvolution
+import net.bstjohn.ad.preprocessing.{SnapshotDiff, UserChanges}
 import org.apache.commons.io.FileUtils
 
+import scala.jdk.CollectionConverters._
 import java.io.File
+import java.nio.file.{Files, Path, Paths}
 
 object Processes {
-
-  val Root = "test-environment-snapshots"
-
-  val timestamps = List(
-    ("20220506180850", SnapshotLabel.Normal),
-    ("20220506183026", SnapshotLabel.Normal),
-//    ("20220507084916", SnapshotLabel.Normal),
-//    ("20220507091000", SnapshotLabel.Normal),
-//    ("20220507092238", SnapshotLabel.Normal),
-//    ("20220509120734", SnapshotLabel.Normal),
-//    ("20220509121121", SnapshotLabel.Normal),
-//    ("20220509121320", SnapshotLabel.Normal),
-////    ("20220509121936", SnapshotLabel.Normal),
-//    ("20220509125013", SnapshotLabel.Normal),
-//    ("20220509135532", SnapshotLabel.Normal),
-//    ("20220520162651", SnapshotLabel.Malicious),
-  )
 
   val DiffsOutputDir = new File("target/diffs")
   val SnapshotsOutputDir = "target/snapshots"
 
-  def generateDiffs(): IO[Unit] = for {
-    _ <- recreateDir(DiffsOutputDir)
-    _ <- timestamps.sliding(2).map {
-      case List(initialName, updatedName) =>
-        for {
-          initial <- ZipSnapshotReader.read(s"$Root/${initialName._1}_BloodHound.zip", initialName._2)
-          updated <- ZipSnapshotReader.read(s"$Root/${updatedName._1}_BloodHound.zip", updatedName._2)
-          _ <- initial.zip(updated).map { case (i, u) =>
-            SnapshotDiff.write(SnapshotDiff.from(i, u), s"target/diffs/${initialName._1}-${updatedName._1}-diff.json")
-          }.getOrElse(().pure[IO])
-        } yield ()
-      case _ =>
-        ().pure[IO]
-    }.toList.sequence
-  } yield ()
-
-  def produceSnapshots(): IO[Unit] = {
+  val generateScenarioSnapshots: IO[Unit] = {
     for {
       _ <- recreateDir(new File(SnapshotsOutputDir))
       _ <- DatabaseEvolution.writeToDisk(DbGenerator.recreateRealDb(), s"$SnapshotsOutputDir/real")
       _ <- DatabaseEvolution.writeToDisk(DbGenerator.generateNestedGroupsDb(), s"$SnapshotsOutputDir/nested")
+      _ <- DatabaseEvolution.writeToDisk(DbGenerator.geographicallyNestedGroups(), s"$SnapshotsOutputDir/geographic")
     } yield ()
   }
 
-  private def recreateDir(dir: File) = IO.delay {
+  val generateTestEnvironmentDiffs: IO[Unit] = {
+    val Root = "test-environment-snapshots"
+    val scenarioName = "test-environment"
+
+    val timestamps: Seq[(String, Option[Seq[String]])] = List(
+      ("20220506180850", Some(Seq.empty)),
+      ("20220506183026", Some(Seq.empty)),
+      ("20220507084916", Some(Seq.empty)),
+      ("20220507091000", Some(Seq.empty)),
+      ("20220507092238", Some(Seq.empty)),
+      ("20220509120734", Some(Seq.empty)),
+      ("20220509121121", Some(Seq.empty)),
+      ("20220509121320", Some(Seq.empty)),
+      ("20220509121936", Some(Seq.empty)),
+      ("20220509125013", Some(Seq.empty)),
+      ("20220509135532", Some(Seq.empty)),
+      ("20220520162651", Some(Seq("S-1-5-21-2767398339-3403964288-3041356156-1114"))),
+    )
+
+    for {
+      _ <- recreateDir(new File(s"$DiffsOutputDir/$scenarioName"))
+      _ <- timestamps.sliding(2).map {
+        case List(initialName, updatedName) =>
+          produceDiff(
+            scenarioName,
+            (Paths.get(s"$Root/${initialName._1}_BloodHound.zip"), initialName._2),
+            (Paths.get(s"$Root/${updatedName._1}_BloodHound.zip"), updatedName._2)
+          )
+        case _ =>
+          ().pure[IO]
+      }.toList.sequence
+    } yield ()
+  }
+
+  val generateScenarioDiffs = IO.defer {
+    val scenarios = Files.walk(Paths.get(SnapshotsOutputDir)).iterator().asScala.toList
+      .filter(Files.isDirectory(_))
+      .filter(_.toString != SnapshotsOutputDir)
+
+    scenarios.map { scenario =>
+      val files = Files.walk(scenario).iterator().asScala.toList.filter(_.toString.endsWith("zip")).sliding(2).toList
+
+      val scenarioName = scenario.getFileName.toString
+
+      for {
+        _ <- recreateDir(new File(s"$DiffsOutputDir/$scenarioName"))
+        _ <- files.map {
+          case List(initialName, updatedName) =>
+            produceDiff(scenarioName, (initialName, None), (updatedName, None))
+          case _ =>
+            ().pure[IO]
+        }.sequence
+      } yield ()
+    }.sequence
+  }
+
+  private def produceDiff(
+    scenarioName: String,
+    initialName: (Path, Option[Seq[String]]),
+    updatedName: (Path, Option[Seq[String]])
+  ): IO[Unit] = {
+    for {
+      initial <- ZipSnapshotReader.read(initialName._1, initialName._2)
+      updated <- ZipSnapshotReader.read(updatedName._1, updatedName._2)
+      _ <- initial.zip(updated).map { case (i, u) =>
+        val diff = SnapshotDiff.from(i, u)
+
+        for {
+          _ <- SnapshotDiff.write(diff, s"$DiffsOutputDir/$scenarioName/${i.epoch.value}-${u.epoch.value}-diff.json")
+          _ <- UserChanges.writeToDisk(diff.userChanges, s"$DiffsOutputDir/$scenarioName/${i.epoch.value}-${u.epoch.value}-changes.csv")
+        } yield ()
+      }.sequence
+    } yield ()
+  }
+
+  private def recreateDir(dir: File): IO[Unit] = IO.delay {
     FileUtils.deleteDirectory(dir)
     dir.mkdirs()
   }

@@ -3,7 +3,6 @@ package net.bstjohn.ad.generator
 import cats.implicits.toTraverseOps
 import munit.CatsEffectSuite
 import net.bstjohn.ad.generator.reader.ZipSnapshotReader
-import net.bstjohn.ad.generator.snapshots.SnapshotLabel
 
 import java.nio.file.{Files, Paths}
 import scala.jdk.CollectionConverters._
@@ -16,7 +15,7 @@ class ExportsSpec extends CatsEffectSuite {
     ).iterator().asScala.toList
 
     for {
-      snapshotOpts <- zipFiles.map(ZipSnapshotReader.read(_, SnapshotLabel.Normal)).sequence
+      snapshotOpts <- zipFiles.map(ZipSnapshotReader.read(_, None)).sequence
     } yield {
       snapshotOpts.map { snapshotOpt =>
         assertEquals(snapshotOpt.isDefined, true)
@@ -32,7 +31,7 @@ class ExportsSpec extends CatsEffectSuite {
       ).iterator().asScala.toList
 
       for {
-        snapshotOpts <- zipFiles.map(ZipSnapshotReader.read(_, SnapshotLabel.Normal)).sequence
+        snapshotOpts <- zipFiles.map(ZipSnapshotReader.read(_, None)).sequence
       } yield {
         snapshotOpts.map { snapshotOpt =>
           assertEquals(snapshotOpt.isDefined, true)
