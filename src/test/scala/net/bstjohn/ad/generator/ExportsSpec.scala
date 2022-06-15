@@ -15,7 +15,7 @@ class ExportsSpec extends CatsEffectSuite {
     ).iterator().asScala.toList
 
     for {
-      snapshotOpts <- zipFiles.map(ZipSnapshotReader.read(_, None)).sequence
+      snapshotOpts <- zipFiles.map(ZipSnapshotReader.read(_, Some(Seq.empty))).sequence
     } yield {
       snapshotOpts.map { snapshotOpt =>
         assertEquals(snapshotOpt.isDefined, true)
@@ -31,7 +31,7 @@ class ExportsSpec extends CatsEffectSuite {
       ).iterator().asScala.toList
 
       for {
-        snapshotOpts <- zipFiles.map(ZipSnapshotReader.read(_, None)).sequence
+        snapshotOpts <- zipFiles.map(ZipSnapshotReader.read(_, Some(Seq.empty))).sequence
       } yield {
         snapshotOpts.map { snapshotOpt =>
           assertEquals(snapshotOpt.isDefined, true)
