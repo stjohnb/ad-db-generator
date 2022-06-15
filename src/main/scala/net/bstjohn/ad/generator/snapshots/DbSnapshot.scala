@@ -6,6 +6,7 @@ import net.bstjohn.ad.generator.format.groups.{Group, Groups}
 import net.bstjohn.ad.generator.format.users.{User, Users}
 import net.bstjohn.ad.generator.generators.model.EpochSeconds
 import io.circe.syntax._
+import net.bstjohn.ad.generator.format.common.EntityId.UserId
 import net.bstjohn.ad.generator.format.computers.{Computer, Computers}
 import net.bstjohn.ad.generator.format.containers.Containers
 import net.bstjohn.ad.generator.format.gpos.Gpos
@@ -25,7 +26,7 @@ case class DbSnapshot(
   ous: Ous,
   users: Users,
   epoch: EpochSeconds,
-  lateralMovementIds: Seq[String]
+  lateralMovementIds: Seq[UserId]
 ) {
   def withUpdatedGroup(group: Group): DbSnapshot =
     copy(groups = groups.copy(
@@ -47,7 +48,7 @@ case class DbSnapshot(
   def timestamp(epoch: EpochSeconds): DbSnapshot =
     this.copy(epoch = epoch)
 
-  def withLateralMovementIds(lateralMovementIds: Seq[String]): DbSnapshot =
+  def withLateralMovementIds(lateralMovementIds: Seq[UserId]): DbSnapshot =
     this.copy(lateralMovementIds = lateralMovementIds)
 
 }
@@ -59,7 +60,7 @@ object DbSnapshot {
     groups: Seq[Group],
     computers: Seq[Computer],
     epoch: EpochSeconds,
-    lateralMovementIds: Seq[String]
+    lateralMovementIds: Seq[UserId]
   ): DbSnapshot = {
     DbSnapshot(
       Computers(computers),
@@ -114,7 +115,5 @@ object DbSnapshot {
     out.closeEntry()
 
     out.close()
-
-    println(s"Snapshot written to $destination")
   }
 }

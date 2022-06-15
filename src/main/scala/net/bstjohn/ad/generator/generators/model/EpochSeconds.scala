@@ -15,9 +15,7 @@ case class EpochSeconds(
     f.format(d)
   }
 
-  def plusRandomSeconds(): EpochSeconds = EpochSeconds(value + Random.nextLong(60))
-
-  def plusSeconds(seconds: Long): EpochSeconds = EpochSeconds(value + seconds).plusRandomSeconds()
+  def plusSeconds(seconds: Long): EpochSeconds = EpochSeconds(value + seconds)
 
   def plusMinutes(minutes: Long): EpochSeconds = this.plusSeconds(minutes * 60)
 

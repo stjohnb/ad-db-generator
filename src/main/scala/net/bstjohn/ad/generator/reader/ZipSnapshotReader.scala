@@ -2,6 +2,7 @@ package net.bstjohn.ad.generator.reader
 
 import cats.effect.{IO, Resource}
 import io.circe.parser._
+import net.bstjohn.ad.generator.format.common.EntityId.UserId
 import net.bstjohn.ad.generator.format.computers.Computers
 import net.bstjohn.ad.generator.format.containers.Containers
 import net.bstjohn.ad.generator.format.domains.Domains
@@ -19,11 +20,11 @@ import scala.jdk.CollectionConverters._
 
 object ZipSnapshotReader {
 
-  def read(path: Path, lateralMovementIds: Option[Seq[String]]): IO[Option[DbSnapshot]] = IO.defer {
+  def read(path: Path, lateralMovementIds: Option[Seq[UserId]]): IO[Option[DbSnapshot]] = IO.defer {
     read(path.toString, lateralMovementIds)
   }
 
-  def read(path: String, lateralMovementIds: Option[Seq[String]]): IO[Option[DbSnapshot]] = IO.defer {
+  def read(path: String, lateralMovementIds: Option[Seq[UserId]]): IO[Option[DbSnapshot]] = IO.defer {
     def fail(message: String) = throw new Exception(s"Failed to read $path - $message")
     val zipFile = new ZipFile(path)
     val entries = zipFile.entries.asScala.toList
@@ -56,9 +57,9 @@ object ZipSnapshotReader {
       val lateralMovementIdsIO = entries.find(e => e.getName.endsWith("lateral_movement_ids.json")) match {
         case Some(entry) =>
           getContents(zipFile, entry).map(contents =>
-            decode[Seq[String]](contents).getOrElse(fail("lateral_movement_ids.json")))
+            decode[Seq[UserId]](contents).getOrElse(fail("lateral_movement_ids.json")))
         case None =>
-          IO.pure(lateralMovementIds.getOrElse(Seq.empty))
+          IO.pure(lateralMovementIds.getOrElse(fail("No lateral movement ids")))
       }
 
       for {
@@ -69,11 +70,11 @@ object ZipSnapshotReader {
         groups <- groupsIO
         ous <- ousIO
         users <- usersIO
-        lateralMovementIds <- lateralMovementIdsIO
+        readLateralMovementIds <- lateralMovementIdsIO
       } yield {
         val s = DbSnapshot(
           computers, containers, domains, gpos, groups, ous, users,
-          epoch = EpochSeconds(epoch), lateralMovementIds
+          epoch = EpochSeconds(epoch), readLateralMovementIds
         )
 
         Some(s)

@@ -3,6 +3,7 @@ package net.bstjohn.ad.generator.format.users
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder}
 import net.bstjohn.ad.generator.format.ace.Ace
+import net.bstjohn.ad.generator.format.common.EntityId.UserId
 import net.bstjohn.ad.generator.generators.model.EpochSeconds
 
 case class User(
@@ -11,7 +12,7 @@ case class User(
   HasSIDHistory: Seq[String],
   SPNTargets: Seq[String],
   Aces: Seq[Ace],
-  ObjectIdentifier: String,
+  ObjectIdentifier: UserId,
   IsDeleted: Boolean,
   IsACLProtected: Boolean,
   Properties: UserProperties,

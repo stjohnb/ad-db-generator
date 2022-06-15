@@ -3,7 +3,7 @@ package net.bstjohn.ad.generator.generators.entities
 import net.bstjohn.ad.generator.format.domains.Domain
 import net.bstjohn.ad.generator.format.users.{User, UserProperties}
 import net.bstjohn.ad.generator.generators.model.NameGenerator.generateName
-import net.bstjohn.ad.generator.generators.common.CommonGenerators.{genBoolean, genOption, genSid, genString}
+import net.bstjohn.ad.generator.generators.common.CommonGenerators.{genBoolean, genOption, genSid, genString, genUserId}
 import net.bstjohn.ad.generator.generators.entities.AceGenerator.generateAces
 import net.bstjohn.ad.generator.generators.model.EpochSeconds
 
@@ -20,7 +20,7 @@ object UserGenerator {
       List.empty,
       List.empty,
       generateAces(),
-      genSid(),
+      genUserId(),
       genBoolean(),
       genBoolean(),
       generateUserProperties(domain, whenCreated)
@@ -37,7 +37,7 @@ object UserGenerator {
       List.empty,
       List.empty,
       generateAces(),
-      genSid(),
+      genUserId(),
       genBoolean(),
       genBoolean(),
       generateUserProperties(domain, whenCreated, dontreqpreauth = Some(true))

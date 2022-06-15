@@ -3,12 +3,13 @@ package net.bstjohn.ad.generator.format.groups
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder}
 import net.bstjohn.ad.generator.format.ace.Ace
+import net.bstjohn.ad.generator.format.common.EntityId.GroupId
 import net.bstjohn.ad.generator.format.users.User
 
 case class Group(
   Members: Seq[GroupMember],
   Aces: Seq[Ace],
-  ObjectIdentifier: String,
+  ObjectIdentifier: GroupId,
   IsDeleted: Boolean,
   IsACLProtected: Boolean,
   Properties: GroupProperties,

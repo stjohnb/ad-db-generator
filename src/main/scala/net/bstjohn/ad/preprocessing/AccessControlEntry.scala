@@ -27,7 +27,7 @@ object AccessControlEntry {
           ace.PrincipalSID,
           ace.RightName,
           AccessControlEntryEntityType.User,
-          user.ObjectIdentifier
+          user.ObjectIdentifier.value
         )
       }
     }
@@ -39,7 +39,7 @@ object AccessControlEntry {
           ace.PrincipalSID,
           ace.RightName,
           AccessControlEntryEntityType.Group,
-          group.ObjectIdentifier
+          group.ObjectIdentifier.value
         )
       }
     }
