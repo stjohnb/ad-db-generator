@@ -1,8 +1,7 @@
 package net.bstjohn.ad.preprocessing.diffs
 
-import com.softwaremill.diffx.DiffResult
-import io.circe.{Decoder, Encoder}
-import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import io.circe.Encoder
+import io.circe.generic.semiauto.deriveEncoder
 import net.bstjohn.ad.generator.format.ace.Ace
 import net.bstjohn.ad.generator.format.users.User
 import net.bstjohn.ad.generator.snapshots.DbSnapshot

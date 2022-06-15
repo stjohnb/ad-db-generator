@@ -97,10 +97,11 @@ object Processes {
       _ <- initial.zip(updated).map { case (i, u) =>
         val diff = SnapshotDiff.from(i, u)
 
-        for {
-          _ <- SnapshotDiff.write(diff, s"$DiffsOutputDir/$scenarioName/${i.epoch.value}-${u.epoch.value}-diff.json")
-          _ <- UserChanges.writeToDisk(diff.userChanges, s"$DiffsOutputDir/$scenarioName/${i.epoch.value}-${u.epoch.value}-changes.csv")
-        } yield ()
+//        for {
+//          _ <- SnapshotDiff.write(diff, s"$DiffsOutputDir/$scenarioName/${i.epoch.value}-${u.epoch.value}-diff.json")
+//          _ <- UserChanges.writeToDisk(diff.userChanges, s"$DiffsOutputDir/$scenarioName/${i.epoch.value}-${u.epoch.value}-changes.csv")
+//        } yield ()
+        UserChanges.writeToDisk(diff.userChanges, s"$DiffsOutputDir/$scenarioName/${i.epoch.value}-${u.epoch.value}-changes.csv")
       }.sequence
     } yield ()
   }
@@ -108,6 +109,7 @@ object Processes {
   private def recreateDir(dir: File): IO[Unit] = IO.delay {
     FileUtils.deleteDirectory(dir)
     dir.mkdirs()
+    ()
   }
 
 }

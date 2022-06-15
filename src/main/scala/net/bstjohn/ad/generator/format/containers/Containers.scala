@@ -1,7 +1,7 @@
 package net.bstjohn.ad.generator.format.containers
 
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
-import io.circe.{Decoder, Encoder, Json}
+import io.circe.{Decoder, Encoder}
 import net.bstjohn.ad.generator.format.common.{Meta, MetaType}
 
 case class Containers(

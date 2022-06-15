@@ -24,14 +24,14 @@ case class UserChanges(
 ) {
   def csvRow: Seq[String] = Seq(
     userId.value,
-    userName,
-    groupsJoined.toString,
-    groupsInherited.toString,
-    acesReceived.toString,
-    acesModified.toString,
+//    userName,
+    s"$groupsJoined",
+    s"$groupsInherited",
+    s"$acesReceived",
+    s"$acesModified",
     if(joinedDomainAdminsGroup) "1" else "0",
     if(userIsKerboroastable) "1" else "0",
-    if(isLateralMovement) "yes-lat" else "no-lat",
+    if(isLateralMovement) "1" else "0",
   )
 }
 
@@ -42,7 +42,7 @@ object UserChanges {
 
   val CsvHeader = Seq(
     "userId",
-    "userName",
+//    "userName",
     "groupsJoined",
     "groupsInherited",
     "acesReceived",
@@ -63,9 +63,9 @@ object UserChanges {
       .filter(_.membersAdded.exists(_.ObjectIdentifier == user.ObjectIdentifier.value))
 
     val groupsInherited = groupsJoined.flatMap(g =>
-      allGroupsRec(g.group.ObjectIdentifier, finalRelations.groupMemberships, Seq.empty))
+      allGroupsRec(g.group.ObjectIdentifier, finalRelations.groupMemberships, groupsJoined.map(_.group.ObjectIdentifier), user.ObjectIdentifier == UserId("attacker-id-123")))
 
-    val acesGained = initialRelations.accessControlEntries.filter(ace => groupsInherited.exists(gid => gid.value == ace.sourceId))
+    val acesGained = finalRelations.accessControlEntries.filter(ace => groupsInherited.exists(gid => gid.value == ace.sourceId))
 
     val initialUserAces = initialRelations.accessControlEntries.filter(e => e.sourceId == user.ObjectIdentifier.value).toSet
     val updatedUserAces = finalRelations.accessControlEntries.filter(e => e.sourceId == user.ObjectIdentifier.value).toSet
@@ -93,12 +93,15 @@ object UserChanges {
     } finally if (printer != null) printer.close()
   }
 
-  private def allGroupsRec(groupId: GroupId, groupsMap: Map[GroupId, Seq[GroupId]], acc: Seq[GroupId]): Seq[GroupId] = {
+  private def allGroupsRec(groupId: GroupId, groupsMap: Map[GroupId, Seq[GroupId]], acc: Seq[GroupId], debug: Boolean): Seq[GroupId] = {
     groupsMap.get(groupId) match {
       case None =>
-        acc
+        throw new Exception(s"No data for $groupId")
       case Some(groups) =>
-        groups.foldLeft(acc)((acc, groupId) => allGroupsRec(groupId, groupsMap, acc))
+        if(debug) {
+          println(s"foldLeft for $groupId - $groups")
+        }
+        groups.foldLeft(acc)((acc, groupId) => allGroupsRec(groupId, groupsMap, acc, debug))
     }
   }
 }

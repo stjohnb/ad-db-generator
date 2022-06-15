@@ -10,8 +10,13 @@ object AccessControlEntryEntityType
     with CirceEnum[AccessControlEntryEntityType] {
     val values: IndexedSeq[AccessControlEntryEntityType] = findValues
 
-    case object User extends AccessControlEntryEntityType
+    case object Computer extends AccessControlEntryEntityType
+    case object Container extends AccessControlEntryEntityType
+    case object Domain extends AccessControlEntryEntityType
+    case object Gpo extends AccessControlEntryEntityType
     case object Group extends AccessControlEntryEntityType
+    case object Ou extends AccessControlEntryEntityType
+    case object User extends AccessControlEntryEntityType
 
   def apply(acePrincipalType: AcePrincipalType): AccessControlEntryEntityType = {
     acePrincipalType match {

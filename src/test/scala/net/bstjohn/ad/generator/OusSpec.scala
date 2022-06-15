@@ -4,7 +4,6 @@ import io.circe.Decoder
 import io.circe.parser._
 import io.circe.syntax._
 import munit.CatsEffectSuite
-import net.bstjohn.ad.generator.format.gpos.Gpos
 import net.bstjohn.ad.generator.format.ous.Ous
 
 class OusSpec extends CatsEffectSuite {

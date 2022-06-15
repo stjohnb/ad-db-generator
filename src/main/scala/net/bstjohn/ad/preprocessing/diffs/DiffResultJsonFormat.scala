@@ -1,9 +1,9 @@
 package net.bstjohn.ad.preprocessing.diffs
 
-import com.softwaremill.diffx.DiffResult
-import io.circe.{Decoder, Encoder}
-import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
-import io.circe.generic.auto._
+//import com.softwaremill.diffx.DiffResult
+//import io.circe.{Decoder, Encoder}
+//import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+//import io.circe.generic.auto._
 
 object DiffResultJsonFormat {
 
