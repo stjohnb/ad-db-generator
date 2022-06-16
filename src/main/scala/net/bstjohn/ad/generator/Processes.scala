@@ -1,7 +1,7 @@
 package net.bstjohn.ad.generator
 
 import cats.effect.IO
-import cats.implicits.{catsSyntaxApplicativeId, toTraverseOps}
+import cats.implicits._
 import net.bstjohn.ad.generator.format.common.EntityId.UserId
 import net.bstjohn.ad.generator.generators.Scenarios
 import net.bstjohn.ad.generator.reader.ZipSnapshotReader
@@ -12,6 +12,7 @@ import org.apache.commons.io.FileUtils
 import scala.jdk.CollectionConverters._
 import java.io.File
 import java.nio.file.{Files, Path, Paths}
+import scala.collection.immutable.Seq
 
 object Processes {
 
@@ -21,9 +22,10 @@ object Processes {
   val generateScenarioSnapshots: IO[Unit] = {
     for {
       _ <- recreateDir(new File(SnapshotsOutputDir))
-      _ <- DatabaseEvolution.writeToDisk(Scenarios.recreateRealDb(), s"$SnapshotsOutputDir/real")
-      _ <- DatabaseEvolution.writeToDisk(Scenarios.nestedGroups(), s"$SnapshotsOutputDir/nested")
-      _ <- DatabaseEvolution.writeToDisk(Scenarios.geographicallyNestedGroups(), s"$SnapshotsOutputDir/geographic")
+      scenarios = (1 to 10).toList.map(i => Scenarios.recreateRealDb(s"test-environment-recreated-$i")) ++
+        (1 to 10).map(i => Scenarios.nestedGroups(s"nested-groups-$i")) ++
+        (1 to 10).map(i => Scenarios.geographicallyNestedGroups(s"geographic-$i"))
+      _ <- scenarios.map(scenario => DatabaseEvolution.writeToDisk(scenario, SnapshotsOutputDir)).sequence
     } yield ()
   }
 
