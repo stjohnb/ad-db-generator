@@ -9,7 +9,7 @@ class ScenariosSpec
 
   test("recreate real db scenario") {
     val attackerId = UserId("attacker-id-123")
-    val evolution = Scenarios.recreateRealDb(attackerId)
+    val evolution = Scenarios.recreateRealDb("test", attackerId)
     val latest = evolution.latestSnapshot
     val previous = evolution.previousSnapshots.lastOption.getOrElse(fail("2nd snapshot missing"))
 

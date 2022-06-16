@@ -4,6 +4,7 @@ import cats.effect.IO
 import cats.implicits.toTraverseOps
 
 case class DatabaseEvolution(
+  scenarioName: String,
   latestSnapshot: DbSnapshot,
   previousSnapshots: Seq[DbSnapshot]
 ) {
@@ -16,17 +17,17 @@ case class DatabaseEvolution(
 
 object DatabaseEvolution {
 
-  def apply(snapshot: DbSnapshot): DatabaseEvolution = {
-    DatabaseEvolution(snapshot, Seq.empty)
+  def apply(name: String, snapshot: DbSnapshot): DatabaseEvolution = {
+    DatabaseEvolution(name, snapshot, Seq.empty)
   }
 
-  def from(snapshot: DbSnapshot, snapshots: DbSnapshot*): DatabaseEvolution = {
-    snapshots.foldLeft(DatabaseEvolution(snapshot))((ev, s) => ev.withSnapshot(s))
+  def from(name: String, snapshot: DbSnapshot, snapshots: DbSnapshot*): DatabaseEvolution = {
+    snapshots.foldLeft(DatabaseEvolution(name, snapshot))((ev, s) => ev.withSnapshot(s))
   }
 
-  def writeToDisk(db: DatabaseEvolution, path: String): IO[Unit] = {
+  def writeToDisk(db: DatabaseEvolution, snapshotsOutputDir: String): IO[Unit] = {
     db.snapshots.map { s =>
-      DbSnapshot.writeToDisk(s, path)
+      DbSnapshot.writeToDisk(s, s"$snapshotsOutputDir/${db.scenarioName}")
     }.sequence.map(_ => ())
   }
 }

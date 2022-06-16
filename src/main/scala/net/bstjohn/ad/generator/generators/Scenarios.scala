@@ -16,7 +16,7 @@ import java.util.{Calendar, GregorianCalendar}
 import scala.util.Random._
 
 object Scenarios {
-  def nestedGroups(): DatabaseEvolution = {
+  def nestedGroups(name: String): DatabaseEvolution = {
     val date = new GregorianCalendar(2005, Calendar.FEBRUARY, 11).getTime
     val start = EpochSeconds.fromDate(date)
 
@@ -47,10 +47,10 @@ object Scenarios {
       .withNewComputers(computers)
       .timestamp(p2End)
 
-    DatabaseEvolution.from(s1, s2)
+    DatabaseEvolution.from(name, s1, s2)
   }
 
-  def recreateRealDb(attackerId: UserId = genUserId()): DatabaseEvolution = {
+  def recreateRealDb(name: String, attackerId: UserId = genUserId()): DatabaseEvolution = {
     val date = new GregorianCalendar(2005, Calendar.FEBRUARY, 11).getTime
 
     val start = EpochSeconds.fromDate(date)
@@ -119,10 +119,10 @@ object Scenarios {
       .withLateralMovementIds(Seq(attacker.ObjectIdentifier))
       .timestamp(s7Timestamp)
 
-    DatabaseEvolution.from(s1, s2, s3, s4, s5, s6, s7)
+    DatabaseEvolution.from(name, s1, s2, s3, s4, s5, s6, s7)
   }
 
-  def geographicallyNestedGroups(): DatabaseEvolution = {
+  def geographicallyNestedGroups(name: String): DatabaseEvolution = {
     val date = new GregorianCalendar(2005, Calendar.FEBRUARY, 11).getTime
 
     val start = EpochSeconds.fromDate(date)
@@ -157,7 +157,7 @@ object Scenarios {
       .withNewComputers(belfastComputers)
       .timestamp(p2End)
 
-    (1 to 50).foldLeft(DatabaseEvolution.from(s1, s2))((evolution, i) => {
+    (1 to 50).foldLeft(DatabaseEvolution.from(name, s1, s2))((evolution, i) => {
       val periodStart = p2End.plusWeeks(i - 1)
       val periodEnd = p2End.plusWeeks(i)
       val newBelfastUsers = generateUsers(0 to 2, domain, periodStart, periodEnd)
