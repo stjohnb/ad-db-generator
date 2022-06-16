@@ -10,8 +10,14 @@ Install [sbt](https://www.scala-sbt.org/)
 sbt test
 ```
 
-### Running
+### Generating data
 
 ```bash
 sbt run
+```
+
+### Train and SVM classifier on the generated data
+
+```bash
+make init && make run
 ```
