@@ -10,7 +10,7 @@ features = lateral_movement_csv.drop(['userId', 'isLateralMovement'], axis=1)
 
 x_train, x_test, y_train, y_test = train_test_split(features, classes, test_size=0.3,random_state=109) # 70% training and 30% test
 
-clf = svm.SVC(kernel='linear')
+clf = svm.SVC(kernel='linear') # 'linear', 'poly', 'rbf', 'sigmoid', 'precomputed'
 clf.fit(x_train, y_train)
 y_pred = clf.predict(x_test)
 

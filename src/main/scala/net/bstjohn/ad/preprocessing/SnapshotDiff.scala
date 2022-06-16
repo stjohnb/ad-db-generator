@@ -33,7 +33,8 @@ object SnapshotDiff {
     UserChanges.writeToDisk(diff.userChanges, s"$path/${diff.from.value}-${diff.to.value}-changes.csv")
   }
 
-  def writeAllUserChanges(diffs: Seq[SnapshotDiff], path: String): IO[Unit] = {
-    UserChanges.writeToDisk(diffs.flatMap(_.userChanges), s"$path/all-changes.csv")
-  }
+  def writeAllUserChanges(diffs: Seq[SnapshotDiff], path: String): IO[Unit] = for {
+    _ <- UserChanges.writeToDisk(diffs.flatMap(_.userChanges), s"$path/all-changes.csv")
+    _ <- UserChanges.writeToDisk(diffs.flatMap(_.userChanges).take(20), s"$path/small-changes.csv")
+  } yield ()
 }
