@@ -11,7 +11,7 @@ object CommonGenerators {
 
   def genGroupId(): GroupId = GroupId(genSid())
 
-  def genUserId(): UserId = UserId(genSid())
+  def genUserId(description: Option[String]): UserId = description.fold(UserId(genSid()))(d => UserId(s"$d-${genSid()}"))
 
   def genString(): String = UUID.randomUUID().toString
 
@@ -24,6 +24,5 @@ object CommonGenerators {
   def genOption(): Option[Unit] = if (genBoolean()) Some(()) else None
 
   def genJsonObject(): JsonObject = JsonObject()
-
 
 }

@@ -1,6 +1,5 @@
 package net.bstjohn.ad.generator.generators.entities
 
-import net.bstjohn.ad.generator.format.common.EntityId.UserId
 import net.bstjohn.ad.generator.format.domains.Domain
 import net.bstjohn.ad.generator.format.users.{User, UserProperties}
 import net.bstjohn.ad.generator.generators.common.CommonGenerators.{genBoolean, genOption, genString, genUserId}
@@ -13,7 +12,8 @@ import scala.util.Random
 object UserGenerator {
   def generateUser(
     domain: Domain,
-    whenCreated: EpochSeconds
+    whenCreated: EpochSeconds,
+    description: Option[String] = None
   ): User = {
     User(
       List.empty,
@@ -21,7 +21,7 @@ object UserGenerator {
       List.empty,
       List.empty,
       generateAces(),
-      genUserId(),
+      genUserId(description),
       genBoolean(),
       genBoolean(),
       generateUserProperties(domain, whenCreated)
@@ -31,7 +31,7 @@ object UserGenerator {
   def kerboroastableUser(
     domain: Domain,
     whenCreated: EpochSeconds,
-    userId: UserId = genUserId()
+    description: Option[String] = None
   ): User = {
     User(
       List.empty,
@@ -39,7 +39,7 @@ object UserGenerator {
       List.empty,
       List.empty,
       generateAces(),
-      userId,
+      genUserId(description),
       genBoolean(),
       genBoolean(),
       generateUserProperties(domain, whenCreated, dontreqpreauth = Some(true))
@@ -50,14 +50,15 @@ object UserGenerator {
     randomCount: Range,
     domain: Domain,
     createdAfter: EpochSeconds,
-    createdBefore: EpochSeconds
+    createdBefore: EpochSeconds,
+    description: Option[String] = None
   ) = {
     val count = Random.nextInt(randomCount.end - randomCount.start) + randomCount.start
 
     (0 to count).map { _ =>
       val created = EpochSeconds(createdAfter.value + Random.nextLong(createdBefore.value - createdAfter.value))
 
-      generateUser(domain, created)
+      generateUser(domain, created, description)
         .loggedOn(created)
     }
   }

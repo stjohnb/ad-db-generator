@@ -22,6 +22,7 @@ case class UserChanges(
   userIsKerboroastable: Boolean,
   isLateralMovement: Boolean
 ) {
+
   def csvRow: Seq[String] = Seq(
     userId.value,
 //    userName,
@@ -33,6 +34,12 @@ case class UserChanges(
     if(userIsKerboroastable) "1" else "0",
     if(isLateralMovement) "1" else "0",
   )
+
+  def isChanged: Boolean = groupsJoined > 0 ||
+    groupsInherited > 0 ||
+    acesReceived > 0 ||
+    acesModified > 0 ||
+    isLateralMovement
 }
 
 object UserChanges {
@@ -59,7 +66,7 @@ object UserChanges {
     finalRelations: InvertedRelations,
     lateralMovementIds: Seq[UserId]
   ): UserChanges = {
-    val groupsJoined: Seq[GroupsDiff.GroupUpdated] = groupDiffs.updated
+    val groupsJoined: Seq[GroupsDiff.GroupUpdated] = groupDiffs.all
       .filter(_.membersAdded.exists(_.ObjectIdentifier == user.ObjectIdentifier.value))
 
     val groupsInherited = groupsJoined.flatMap(g =>
@@ -98,9 +105,6 @@ object UserChanges {
       case None =>
         throw new Exception(s"No data for $groupId")
       case Some(groups) =>
-        if(debug) {
-          println(s"foldLeft for $groupId - $groups")
-        }
         groups.foldLeft(acc)((acc, groupId) => allGroupsRec(groupId, groupsMap, acc, debug))
     }
   }

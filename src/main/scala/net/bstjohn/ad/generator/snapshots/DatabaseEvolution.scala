@@ -8,11 +8,16 @@ case class DatabaseEvolution(
   latestSnapshot: DbSnapshot,
   previousSnapshots: Seq[DbSnapshot]
 ) {
+  def snapshots: Seq[DbSnapshot] = this.previousSnapshots :+ this.latestSnapshot
+
   def withSnapshot(snapshot: DbSnapshot): DatabaseEvolution = this.copy(
     latestSnapshot = snapshot,
     previousSnapshots = snapshots)
 
-  def snapshots: Seq[DbSnapshot] = this.previousSnapshots :+ this.latestSnapshot
+  def updated(update: DbSnapshot => DbSnapshot): DatabaseEvolution = withSnapshot(update(latestSnapshot))
+
+  def first: Option[DbSnapshot] = snapshots.headOption
+  def second: Option[DbSnapshot] = snapshots.tail.headOption
 }
 
 object DatabaseEvolution {

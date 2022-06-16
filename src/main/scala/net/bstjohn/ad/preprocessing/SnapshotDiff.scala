@@ -1,22 +1,19 @@
 package net.bstjohn.ad.preprocessing
 
 import cats.effect.IO
-import io.circe.Encoder
-import io.circe.generic.semiauto.deriveEncoder
-import io.circe.syntax._
+import net.bstjohn.ad.generator.generators.model.EpochSeconds
 import net.bstjohn.ad.generator.snapshots.DbSnapshot
 import net.bstjohn.ad.preprocessing.diffs._
-import java.io.{File, PrintWriter}
 
 case class SnapshotDiff (
+  from: EpochSeconds,
+  to: EpochSeconds,
   changedUsers: UsersDiff,
   changedGroups: GroupsDiff,
   userChanges: Seq[UserChanges]
 )
 
 object SnapshotDiff {
-
-  implicit val SnapshotDiffEncoder: Encoder[SnapshotDiff] = deriveEncoder[SnapshotDiff]
 
   def from(initial: DbSnapshot, finalSnapshot: DbSnapshot): SnapshotDiff = {
     val initialRelations = InvertedRelations.from(initial)
@@ -27,17 +24,16 @@ object SnapshotDiff {
 
     val userChanges = finalSnapshot.users.data.map(u =>
       UserChanges(u, groupDiffs, initialRelations, finalRelations, finalSnapshot.lateralMovementIds)
-    )
+    ).filter(_.isChanged)
 
-    SnapshotDiff(userDiffs, groupDiffs, userChanges)
+    SnapshotDiff(initial.epoch, finalSnapshot.epoch, userDiffs, groupDiffs, userChanges)
   }
 
-  def write(diff: SnapshotDiff, path: String): IO[Unit] = {
-    writeToFile(diff.asJson.spaces2, path)
+  def writeUserChanges(diff: SnapshotDiff, path: String): IO[Unit] = {
+    UserChanges.writeToDisk(diff.userChanges, s"$path/${diff.from.value}-${diff.to.value}-changes.csv")
   }
 
-  private def writeToFile(contents: String, path: String): IO[Unit] = IO.delay {
-    val pw = new PrintWriter(new File(path))
-    try pw.write(contents) finally pw.close()
+  def writeAllUserChanges(diffs: Seq[SnapshotDiff], path: String): IO[Unit] = {
+    UserChanges.writeToDisk(diffs.flatMap(_.userChanges), s"$path/all-changes.csv")
   }
 }

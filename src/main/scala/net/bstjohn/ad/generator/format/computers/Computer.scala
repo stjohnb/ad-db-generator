@@ -22,7 +22,11 @@ case class Computer(
   IsDeleted: Boolean,
   IsACLProtected: Boolean,
   Properties: ComputerProperties,
-) 
+) {
+  def withAce(ace: Ace): Computer = copy(Aces = Aces :+ ace)
+
+  def withAces(aces: Seq[Ace]): Computer = copy(Aces = Aces ++ aces)
+}
 
 object Computer {
   implicit val ComputerDecoder: Decoder[Computer] = deriveDecoder[Computer]
