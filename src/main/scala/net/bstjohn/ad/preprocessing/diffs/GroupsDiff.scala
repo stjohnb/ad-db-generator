@@ -8,10 +8,12 @@ import net.bstjohn.ad.generator.snapshots.DbSnapshot
 import net.bstjohn.ad.preprocessing.diffs.GroupsDiff.GroupUpdated
 
 case class GroupsDiff(
-  created: Seq[Group],
+  created: Seq[GroupUpdated],
   updated: Seq[GroupUpdated],
   deleted: Seq[Group],
-)
+) {
+  def all: Seq[GroupUpdated] = created ++ updated
+}
 
 object GroupsDiff {
 
@@ -33,19 +35,19 @@ object GroupsDiff {
   ): GroupsDiff = {
     val created = updated.groups.data.collect {
       case g if !initial.groups.data.exists(_.ObjectIdentifier == g.ObjectIdentifier) =>
-        g
+        GroupUpdated(g, acesAdded = g.Aces.toSet, membersAdded = g.Members.toSet)
     }
 
     val updates = updated.groups.data.flatMap { update =>
-      initial.groups.data.find(g => g.ObjectIdentifier == update.ObjectIdentifier) match {
-        case Some(previous) if previous.Aces.size < update.Aces.size || previous.Members.size < update.Members.size  =>
-          Some(GroupUpdated(
-            update,
-            acesAdded = update.Aces.toSet -- previous.Aces.toSet,
-            membersAdded = update.Members.toSet -- previous.Members.toSet
-          ))
-        case _ =>
+      initial.groups.data.find(g => g.ObjectIdentifier == update.ObjectIdentifier) flatMap { previous =>
+        val acesAdded = update.Aces.toSet -- previous.Aces.toSet
+        val membersAdded = update.Members.toSet -- previous.Members.toSet
+
+        if (acesAdded.nonEmpty || membersAdded.nonEmpty) {
+          Some(GroupUpdated(update, acesAdded, membersAdded))
+        } else {
           None
+        }
       }
     }
 

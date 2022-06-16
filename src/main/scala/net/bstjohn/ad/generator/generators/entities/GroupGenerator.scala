@@ -25,10 +25,6 @@ object GroupGenerator {
 
   val DomainAdminsGroupName = "DOMAIN ADMINS"
 
-  def generateDomainAdminsGroup(domain: Domain, whenCreated: EpochSeconds): Group = {
-    generateGroup(domain, whenCreated, DomainAdminsGroupName)
-  }
-
   private def genGroupProperties(
     domain: Domain,
     whenCreated: EpochSeconds,

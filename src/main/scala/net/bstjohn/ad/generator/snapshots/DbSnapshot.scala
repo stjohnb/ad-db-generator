@@ -42,8 +42,11 @@ case class DbSnapshot(
   def withUpdatedUsers(users: Seq[User]): DbSnapshot =
     users.foldLeft(this)((s, u) => s.withUpdatedUser(u))
 
+  def withNewComputer(computer: Computer): DbSnapshot =
+    this.copy(computers = this.computers.copy(data = this.computers.data :+ computer))
+
   def withNewComputers(computers: Seq[Computer]): DbSnapshot =
-    this.copy(computers = this.computers.copy(data = this.computers.data  ++ computers))
+    this.copy(computers = this.computers.copy(data = this.computers.data ++ computers))
 
   def timestamp(epoch: EpochSeconds): DbSnapshot =
     this.copy(epoch = epoch)
