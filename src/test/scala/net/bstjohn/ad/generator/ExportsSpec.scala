@@ -28,7 +28,7 @@ class ExportsSpec extends CatsEffectSuite {
 
     if(Files.exists(mainOutputDir)) {
       val zipFiles = Files.find(mainOutputDir, 2, (p, _) => p.getFileName.toString.endsWith(".zip")
-      ).iterator().asScala.toList
+      ).iterator().asScala.toList.take(50)
 
       for {
         snapshotOpts <- zipFiles.map(ZipSnapshotReader.read(_, Some(Seq.empty))).sequence
