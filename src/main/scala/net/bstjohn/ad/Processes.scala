@@ -20,12 +20,12 @@ object Processes {
   val DiffsOutputDir = new File("target/diffs")
   val SnapshotsOutputDir = "target/snapshots"
 
-  val generateScenarioSnapshots: IO[Unit] = {
+  def generateScenarioSnapshots(loopCount: Int): IO[Unit] = {
     for {
       _ <- recreateDir(new File(SnapshotsOutputDir))
-      scenarios = (1 to 10).toList.map(i => Scenarios.recreateRealDb(s"test-environment-recreated-$i", Random.nextBoolean())) ++
-        (1 to 10).map(i => Scenarios.nestedGroups(s"nested-groups-$i")) ++
-        (1 to 10).map(i => Scenarios.geographicallyNestedGroups(s"geographic-$i"))
+      scenarios = (1 to loopCount).toList.map(i => Scenarios.recreateRealDb(s"test-environment-recreated-$i", Random.nextBoolean())) ++
+        (1 to loopCount).map(i => Scenarios.nestedGroups(s"nested-groups-$i")) ++
+        (1 to loopCount).map(i => Scenarios.geographicallyNestedGroups(s"geographic-$i"))
       _ <- scenarios.map(scenario => DatabaseEvolution.writeToDisk(scenario, SnapshotsOutputDir)).sequence
     } yield ()
   }
@@ -71,7 +71,7 @@ object Processes {
     for {
       _ <- recreateDir(DiffsOutputDir)
       scenarioDiffs <- scenarios.map(generateDiffs).sequence
-      _ <- SnapshotDiff.writeAllUserChanges(scenarioDiffs.flatten, s"$DiffsOutputDir")
+      _ <- SnapshotDiff.writeAllUserChanges(scenarioDiffs.flatten, "feature-vectors")
     } yield ()
   }
 
