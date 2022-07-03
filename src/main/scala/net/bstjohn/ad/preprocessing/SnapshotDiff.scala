@@ -35,6 +35,8 @@ object SnapshotDiff {
 
   def writeAllUserChanges(diffs: Seq[SnapshotDiff], path: String): IO[Unit] = for {
     _ <- UserChanges.writeToDisk(diffs.flatMap(_.userChanges), s"$path/all-changes.csv")
+    _ <- UserChanges.writeToDisk(diffs.flatMap(_.userChanges).filter(c=> c.isLateralMovement), s"$path/lateral-movements.csv")
+    _ <- UserChanges.writeToDisk(diffs.flatMap(_.userChanges).filterNot(c=> c.isLateralMovement), s"$path/non-lateral-movements.csv")
     _ <- UserChanges.writeToDisk(diffs.flatMap(_.userChanges).take(20), s"$path/small-changes.csv")
   } yield ()
 }

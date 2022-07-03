@@ -11,9 +11,7 @@ import org.apache.commons.io.FileUtils
 
 import java.io.File
 import java.nio.file.{Files, Path, Paths}
-import scala.collection.immutable.Seq
 import scala.jdk.CollectionConverters._
-import scala.util.Random
 
 object Processes {
 
@@ -23,9 +21,9 @@ object Processes {
   def generateScenarioSnapshots(loopCount: Int): IO[Unit] = {
     for {
       _ <- recreateDir(new File(SnapshotsOutputDir))
-      scenarios = (1 to loopCount).toList.map(i => Scenarios.recreateRealDb(s"test-environment-recreated-$i", Random.nextBoolean())) ++
-        (1 to loopCount).map(i => Scenarios.nestedGroups(s"nested-groups-$i")) ++
-        (1 to loopCount).map(i => Scenarios.geographicallyNestedGroups(s"geographic-$i"))
+      scenarios = (1 to loopCount).toList.map(i => Scenarios.recreateRealDb(s"test-environment-recreated_randomness-$i", i))
+//        (1 to loopCount).map(i => Scenarios.nestedGroups(s"nested-groups-$i")) ++
+//        (1 to loopCount).map(i => Scenarios.geographicallyNestedGroups(s"geographic-$i"))
       _ <- scenarios.map(scenario => DatabaseEvolution.writeToDisk(scenario, SnapshotsOutputDir)).sequence
     } yield ()
   }
