@@ -8,3 +8,4 @@ project/metals.sbt
 project/project
 *.log
 src/it/resources/zk-single-kafka-single
+feature-vectors/

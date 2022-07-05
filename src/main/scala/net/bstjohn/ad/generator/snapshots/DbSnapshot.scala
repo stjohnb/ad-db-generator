@@ -122,11 +122,8 @@ object DbSnapshot {
     out.write(snapshot.users.asJson.spaces2.getBytes)
     out.closeEntry()
 
-    val lat = snapshot.lateralMovementIds.asJson.spaces2
-    println(s"$destination - $dateString - ${snapshot.lateralMovementIds} - $lat")
-
     out.putNextEntry(new ZipEntry(s"${dateString}_lateral_movement_ids.json"))
-    out.write(lat.getBytes)
+    out.write(snapshot.lateralMovementIds.asJson.spaces2.getBytes)
     out.closeEntry()
 
     out.close()

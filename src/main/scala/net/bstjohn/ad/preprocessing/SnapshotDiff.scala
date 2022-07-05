@@ -38,7 +38,7 @@ object SnapshotDiff {
     val lateralMovements = userChanges.filter(_.isLateralMovement)
     val nonLateralMovements = userChanges.filterNot(_.isLateralMovement)
     val split = nonLateralMovements.map {
-      case l if Math.random() < 0.7 => Right(l)
+      case l if Math.random() < 0.8 => Right(l)
       case l => Left(l)
     }
 
