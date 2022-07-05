@@ -6,6 +6,7 @@ import pandas
 from sklearn import metrics
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 run_count = 10
 
@@ -52,12 +53,15 @@ randomness = range(1, 21)
 
 results = np.array(list(map(process_scenario, randomness)))
 
+plots_dir = 'target/plots'
+os.mkdir(plots_dir)
+
 plt.title("Anomaly detection")
 plt.xlabel("Randomness")
 plt.ylabel(f'Mean accuracy score over {run_count} runs')
 plt.ylim([0, 1])
 plt.plot(randomness, results[:, 0], color='red')
-plt.savefig('target/plots/Accuracy.png')
+plt.savefig(f'{plots_dir}/Accuracy.png')
 plt.clf()
 
 plt.title("Anomaly detection")
@@ -65,7 +69,7 @@ plt.xlabel("Randomness")
 plt.ylabel(f'Mean precision score over {run_count} runs')
 plt.ylim([0, 1])
 plt.plot(randomness, results[:, 1], color='green')
-plt.savefig('target/plots/Precision.png')
+plt.savefig(f'{plots_dir}/Precision.png')
 plt.clf()
 
 plt.title("Anomaly detection")
@@ -73,7 +77,7 @@ plt.xlabel("Randomness")
 plt.ylabel(f'Mean recall score over {run_count} runs')
 plt.ylim([0, 1])
 plt.plot(randomness, results[:, 2], color='green')
-plt.savefig('target/plots/Recall.png')
+plt.savefig(f'{plots_dir}/Recall.png')
 plt.clf()
 
 plt.title("Anomaly detection")
@@ -81,5 +85,5 @@ plt.xlabel("Randomness")
 plt.ylabel(f'Mean F1 score over {run_count} runs')
 plt.ylim([0, 1])
 plt.plot(randomness, results[:, 3], color='green')
-plt.savefig('target/plots/F1.png')
+plt.savefig(f'{plots_dir}/F1.png')
 plt.clf()
