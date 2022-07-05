@@ -19,9 +19,6 @@ object GpoProperties {
   implicit val GpoPropertiesDecoder: Decoder[GpoProperties] = deriveDecoder[GpoProperties]
   implicit val GpoPropertiesEncoder: Encoder[GpoProperties] = deriveEncoder[GpoProperties].mapJson(_.deepDropNullValues)
 
-//  implicit val jsonOptionDiffInstance: Diff[Option[Json]] = JsonDiffInstance.diffForOptionJson(implicitly[Diff[String]])
-//  implicit val jsonOptionListDiffInstance: Diff[Option[List[Json]]] = JsonDiffInstance.diffForOptionListJson(implicitly[Diff[String]])
-
   implicit val GpoPropertiesDiff = Diff.derived[GpoProperties]
 
 }

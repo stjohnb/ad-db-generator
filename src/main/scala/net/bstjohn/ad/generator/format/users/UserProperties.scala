@@ -40,11 +40,4 @@ object UserProperties {
   implicit val UserPropertiesDecoder: Decoder[UserProperties] = deriveDecoder[UserProperties]
   implicit val UserPropertiesEncoder: Encoder[UserProperties] = deriveEncoder[UserProperties].mapJson(_.deepDropNullValues)
 
-  import JsonDiffInstance._
-
-//  implicit val jsonOptionDiffInstance: Diff[Option[Json]] = JsonDiffInstance.diffForOptionJson(implicitly[Diff[String]])
-//  implicit val jsonOptionListDiffInstance: Diff[Option[List[Json]]] = JsonDiffInstance.diffForOptionListJson(implicitly[Diff[String]])
-
-//  implicit val UserPropertiesDiff = Diff.derived[UserProperties]
-
 }

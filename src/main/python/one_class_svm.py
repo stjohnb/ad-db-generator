@@ -1,27 +1,63 @@
+from cgi import test
+from cmath import e
+from scipy import rand
 from sklearn.svm import OneClassSVM
-from sklearn.datasets import make_blobs
-from numpy import where, random
+import pandas
+from sklearn import metrics
 import matplotlib.pyplot as plt
+import numpy as np
 
-random.seed(13)
-x, _ = make_blobs(n_samples=200, centers=1, cluster_std=.3, center_box=(8, 8))
+run_count = 10
 
-plt.scatter(x[:,0], x[:,1])
-plt.show()
+def process_scenario(randomness):
+  runs = range(1, run_count + 1)
 
-svm = OneClassSVM(
-  kernel='rbf', # 'linear', 'poly', 'rbf', 'sigmoid', 'precomputed'
-  gamma=0.001, 
-  nu=0.03
-)
+  results = np.array(list(map(lambda run: process_run(randomness, run), runs)))
 
-pred = svm.fit_predict(x)
+  return [
+    sum(results[:, 0]) / run_count,
+    sum(results[:, 1]) / run_count,
+    sum(results[:, 2]) / run_count,
+    # sum(results[:, 3]) / run_count,
+  ]
 
-print(pred)
+def process_run(randomness, run):
+  path = f'feature-vectors/randomness-{randomness}_run-{run}'
 
-anom_index = where(pred==-1)
-values = x[anom_index]
+  train = pandas.read_csv(f'{path}/train.csv')
+  test = pandas.read_csv(f'{path}/test.csv')
 
-plt.scatter(x[:,0], x[:,1])
-plt.scatter(values[:,0], values[:,1], color='r')
+  train_features = train.drop(['userId', 'isNormalActivity'], axis=1)
+  train_labels = train['isNormalActivity']
+  test_labels = test['isNormalActivity']
+
+  svm = OneClassSVM(
+    kernel='rbf', # 'linear', 'poly', 'rbf', 'sigmoid', 'precomputed'
+    gamma=0.001, 
+    nu=0.03
+  )
+
+  svm.fit(train_features)
+
+  test_pred = svm.predict(test.drop(['userId', 'isNormalActivity'], axis=1))
+
+  return [
+    metrics.accuracy_score(test_labels, test_pred),
+    # metrics.precision_score(test_labels, test_pred),
+    metrics.recall_score(test_labels, test_pred),
+    metrics.f1_score(test_labels, test_pred)
+  ]
+
+randomness = range(1, 21)
+
+results = np.array(list(map(process_scenario, randomness)))
+
+plt.title("Anomaly detection")
+plt.xlabel("Randomness")
+plt.ylabel(f'Mean F1 score over {run_count} runs')
+
+# plt.plot(randomness, results[:, 0], color='red')
+# plt.plot(randomness, results[:, 1], color='green')
+plt.plot(randomness, results[:, 2], color='blue')
+# plt.scatter(randomness, list(map(lambda xs: sum(xs) / len(xs), results[:, 2])))
 plt.show()

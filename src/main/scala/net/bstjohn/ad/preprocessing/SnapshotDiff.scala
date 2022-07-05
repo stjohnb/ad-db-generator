@@ -1,6 +1,7 @@
 package net.bstjohn.ad.preprocessing
 
 import cats.effect.IO
+import net.bstjohn.ad.generator.format.common.EntityId.UserId
 import net.bstjohn.ad.generator.generators.model.EpochSeconds
 import net.bstjohn.ad.generator.snapshots.DbSnapshot
 import net.bstjohn.ad.preprocessing.diffs._
@@ -33,10 +34,27 @@ object SnapshotDiff {
     UserChanges.writeToDisk(diff.userChanges, s"$path/${diff.from.value}-${diff.to.value}-changes.csv")
   }
 
-  def writeAllUserChanges(diffs: Seq[SnapshotDiff], path: String): IO[Unit] = for {
-    _ <- UserChanges.writeToDisk(diffs.flatMap(_.userChanges), s"$path/all-changes.csv")
-    _ <- UserChanges.writeToDisk(diffs.flatMap(_.userChanges).filter(c=> c.isLateralMovement), s"$path/lateral-movements.csv")
-    _ <- UserChanges.writeToDisk(diffs.flatMap(_.userChanges).filterNot(c=> c.isLateralMovement), s"$path/non-lateral-movements.csv")
-    _ <- UserChanges.writeToDisk(diffs.flatMap(_.userChanges).take(20), s"$path/small-changes.csv")
-  } yield ()
+  def writeAllUserChanges(diffs: Seq[SnapshotDiff], path: String): IO[Unit] = {
+    val userChanges = diffs.flatMap(_.userChanges)
+    val lateralMovements = userChanges.filter(_.isLateralMovement)
+    val nonLateralMovements = userChanges.filterNot(_.isLateralMovement)
+    val split = nonLateralMovements.map {
+      case l if Math.random() < 0.7 => Right(l)
+      case l => Left(l)
+    }
+
+    val train: Seq[UserChanges] = split.collect {
+      case Right(l) => l
+    }
+    val test: Seq[UserChanges] = split.collect {
+      case Left(l) => l
+    } ++ lateralMovements
+
+    for {
+      //    _ <- UserChanges.writeToDisk(diffs.flatMap(_.userChanges), s"$path/all-changes.csv")
+      _ <- UserChanges.writeToDisk(train, s"$path/train.csv")
+      _ <- UserChanges.writeToDisk(test, s"$path/test.csv")
+      //    _ <- UserChanges.writeToDisk(diffs.flatMap(_.userChanges).take(20), s"$path/small-changes.csv")
+    } yield ()
+  }
 }

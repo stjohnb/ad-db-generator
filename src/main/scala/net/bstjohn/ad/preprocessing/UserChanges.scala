@@ -32,7 +32,7 @@ case class UserChanges(
     s"$acesModified",
     if(joinedDomainAdminsGroup) "1" else "0",
     if(userIsKerboroastable) "1" else "0",
-    if(isLateralMovement) "1" else "0",
+    if(isLateralMovement) "-1" else "1",
   )
 
   def isChanged: Boolean = groupsJoined > 0 ||
@@ -56,7 +56,7 @@ object UserChanges {
     "acesModified",
     "joinedDomainAdminsGroup",
     "userIsKerboroastable",
-    "isLateralMovement"
+    "isNormalActivity"
   )
 
   def apply(

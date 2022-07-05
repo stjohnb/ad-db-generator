@@ -18,26 +18,13 @@ object UsersDiff {
   implicit val UserDiffEncoder: Encoder[UsersDiff] = deriveEncoder[UsersDiff]
 
   case class UserUpdated(
-//    previous: User,
-//    current: User,
     name: String,
     acesAdded: Set[Ace],
     acesRemoved: Set[Ace],
-//    diffResult: DiffResult
   )
 
   object UserUpdated {
-//    import DiffResultJsonFormat._
-
     implicit val UserUpdatedEncoder: Encoder[UserUpdated] = deriveEncoder[UserUpdated]
-
-//    def apply(previous: User, current: User): UserUpdated = {
-//      import com.softwaremill.diffx.generic.auto._
-//      import com.softwaremill.diffx._
-//
-//      UserUpdated(previous, current, compare(previous, current))
-//    }
-
   }
 
   val empty = UsersDiff(List.empty, List.empty, List.empty)
@@ -52,8 +39,6 @@ object UsersDiff {
       s1.users.data.find(g => g.ObjectIdentifier == update.ObjectIdentifier) match {
         case Some(previous) if previous != update =>
           Some(UserUpdated(
-//            previous,
-//            update,
             name = previous.Properties.name,
             update.Aces.toSet.diff(previous.Aces.toSet),
             previous.Aces.toSet.diff(update.Aces.toSet)
