@@ -5,8 +5,8 @@ import pandas
 
 lateral_movement_csv = pandas.read_csv('feature-vectors/all-changes.csv')
 
-classes = lateral_movement_csv['isLateralMovement']
-features = lateral_movement_csv.drop(['userId', 'isLateralMovement'], axis=1)
+classes = lateral_movement_csv['isNormalActivity']
+features = lateral_movement_csv.drop(['userId', 'isNormalActivity'], axis=1)
 
 x_train, x_test, y_train, y_test = train_test_split(features, classes, test_size=0.3,random_state=109) # 70% training and 30% test
 

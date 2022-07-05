@@ -27,9 +27,4 @@ object ComputerProperties {
   implicit val ComputerPropertiesDecoder: Decoder[ComputerProperties] = deriveDecoder[ComputerProperties]
   implicit val ComputerPropertiesEncoder: Encoder[ComputerProperties] = deriveEncoder[ComputerProperties].mapJson(_.deepDropNullValues)
 
-//  implicit val jsonOptionDiffInstance: Diff[Option[Json]] = JsonDiffInstance.diffForOptionJson(implicitly[Diff[String]])
-//  implicit val jsonOptionListDiffInstance: Diff[Option[List[Json]]] = JsonDiffInstance.diffForOptionListJson(implicitly[Diff[String]])
-
-//  implicit val ComputerPropertiesDiff = Diff.derived[ComputerProperties]
-
 }

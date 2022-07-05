@@ -3,7 +3,7 @@ package net.bstjohn.ad
 import cats.effect.IO
 import cats.implicits._
 import net.bstjohn.ad.generator.format.common.EntityId.UserId
-import net.bstjohn.ad.generator.generators.Scenarios
+import net.bstjohn.ad.generator.generators.RecreateRealDb
 import net.bstjohn.ad.generator.reader.ZipSnapshotReader
 import net.bstjohn.ad.generator.snapshots.DatabaseEvolution
 import net.bstjohn.ad.preprocessing.SnapshotDiff
@@ -11,22 +11,26 @@ import org.apache.commons.io.FileUtils
 
 import java.io.File
 import java.nio.file.{Files, Path, Paths}
-import scala.collection.immutable.Seq
 import scala.jdk.CollectionConverters._
-import scala.util.Random
 
 object Processes {
 
   val DiffsOutputDir = new File("target/diffs")
   val SnapshotsOutputDir = "target/snapshots"
 
-  def generateScenarioSnapshots(loopCount: Int): IO[Unit] = {
+  val generateScenarioSnapshots: IO[Unit] = {
     for {
       _ <- recreateDir(new File(SnapshotsOutputDir))
-      scenarios = (1 to loopCount).toList.map(i => Scenarios.recreateRealDb(s"test-environment-recreated-$i", Random.nextBoolean())) ++
-        (1 to loopCount).map(i => Scenarios.nestedGroups(s"nested-groups-$i")) ++
-        (1 to loopCount).map(i => Scenarios.geographicallyNestedGroups(s"geographic-$i"))
-      _ <- scenarios.map(scenario => DatabaseEvolution.writeToDisk(scenario, SnapshotsOutputDir)).sequence
+      _ <- recreateDir(new File("feature-vectors"))
+      _ <- (1 to 20).flatMap(rand =>
+        (1 to 10).map(run =>
+          DatabaseEvolution.writeToDisk(
+            RecreateRealDb.evolution(s"randomness-${rand}_run-$run", rand),
+            SnapshotsOutputDir
+          ))).toList.sequence
+//        (1 to loopCount).map(i => Scenarios.nestedGroups(s"nested-groups-$i")) ++
+//        (1 to loopCount).map(i => Scenarios.geographicallyNestedGroups(s"geographic-$i"))
+//      _ <- scenarios.map(scenario => DatabaseEvolution.writeToDisk(scenario, SnapshotsOutputDir)).toList.sequence
     } yield ()
   }
 
@@ -70,8 +74,7 @@ object Processes {
 
     for {
       _ <- recreateDir(DiffsOutputDir)
-      scenarioDiffs <- scenarios.map(generateDiffs).sequence
-      _ <- SnapshotDiff.writeAllUserChanges(scenarioDiffs.flatten, "feature-vectors")
+      _ <- scenarios.map(generateDiffs).sequence
     } yield ()
   }
 
@@ -79,20 +82,24 @@ object Processes {
     val files = Files.walk(scenario).iterator().asScala.toList
       .filter(_.toString.endsWith("zip"))
       .sortBy(p => p.getFileName.toString)
-      .sliding(2).toList
 
+    val pairs: Seq[List[Path]] = files.sliding(2).toList
     val scenarioName = scenario.getFileName.toString
 
     for {
       _ <- recreateDir(new File(s"$DiffsOutputDir/$scenarioName"))
-      diffs <- files.map {
+      diffOpts <- pairs.map {
         case List(initialName, updatedName) =>
           produceDiff((initialName, None), (updatedName, None))
-        case _ =>
-          IO.pure(None)
+
+        case _ => IO.pure(None)
       }.sequence
-      _ <- diffs.flatten.map(SnapshotDiff.writeUserChanges(_, s"$DiffsOutputDir/$scenarioName")).sequence
-    } yield diffs.flatten
+      diffs = diffOpts.flatten
+//      _ <- diffs.map(SnapshotDiff.writeUserChanges(_, s"$DiffsOutputDir/$scenarioName")).sequence
+      outputDir = s"feature-vectors/$scenarioName"
+      _ <- recreateDir(new File(outputDir))
+      _ <- SnapshotDiff.writeAllUserChanges(diffs, outputDir)
+    } yield diffs
   }
 
   private def produceDiff(

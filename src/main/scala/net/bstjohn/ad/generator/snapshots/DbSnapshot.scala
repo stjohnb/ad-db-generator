@@ -54,6 +54,9 @@ case class DbSnapshot(
   def withLateralMovementIds(lateralMovementIds: Seq[UserId]): DbSnapshot =
     this.copy(lateralMovementIds = lateralMovementIds)
 
+  def clearLateralMovementIds: DbSnapshot =
+    this.copy(lateralMovementIds = Seq.empty).timestamp(epoch.plusMinutes(1))
+
 }
 
 object DbSnapshot {
@@ -83,37 +86,43 @@ object DbSnapshot {
     val destination = s"$directory/${snapshot.epoch.toDateString}_BloodHound.zip"
     val f = new File(destination)
 
+    if(f.exists()) {
+      throw new Exception(s"$f already exists")
+    }
+
     val out = new ZipOutputStream(new FileOutputStream(f))
 
-    out.putNextEntry(new ZipEntry(s"${snapshot.epoch.toDateString}_containers.json"))
+    val dateString = snapshot.epoch.toDateString
+
+    out.putNextEntry(new ZipEntry(s"${dateString}_containers.json"))
     out.write(snapshot.containers.asJson.spaces2.getBytes)
     out.closeEntry()
 
-    out.putNextEntry(new ZipEntry(s"${snapshot.epoch.toDateString}_computers.json"))
+    out.putNextEntry(new ZipEntry(s"${dateString}_computers.json"))
     out.write(snapshot.computers.asJson.spaces2.getBytes)
     out.closeEntry()
 
-    out.putNextEntry(new ZipEntry(s"${snapshot.epoch.toDateString}_domains.json"))
+    out.putNextEntry(new ZipEntry(s"${dateString}_domains.json"))
     out.write(snapshot.domains.asJson.spaces2.getBytes)
     out.closeEntry()
 
-    out.putNextEntry(new ZipEntry(s"${snapshot.epoch.toDateString}_gpos.json"))
+    out.putNextEntry(new ZipEntry(s"${dateString}_gpos.json"))
     out.write(snapshot.gpos.asJson.spaces2.getBytes)
     out.closeEntry()
 
-    out.putNextEntry(new ZipEntry(s"${snapshot.epoch.toDateString}_groups.json"))
+    out.putNextEntry(new ZipEntry(s"${dateString}_groups.json"))
     out.write(snapshot.groups.asJson.spaces2.getBytes)
     out.closeEntry()
 
-    out.putNextEntry(new ZipEntry(s"${snapshot.epoch.toDateString}_ous.json"))
+    out.putNextEntry(new ZipEntry(s"${dateString}_ous.json"))
     out.write(snapshot.ous.asJson.spaces2.getBytes)
     out.closeEntry()
 
-    out.putNextEntry(new ZipEntry(s"${snapshot.epoch.toDateString}_users.json"))
+    out.putNextEntry(new ZipEntry(s"${dateString}_users.json"))
     out.write(snapshot.users.asJson.spaces2.getBytes)
     out.closeEntry()
 
-    out.putNextEntry(new ZipEntry(s"${snapshot.epoch.toDateString}_lateral_movement_ids.json"))
+    out.putNextEntry(new ZipEntry(s"${dateString}_lateral_movement_ids.json"))
     out.write(snapshot.lateralMovementIds.asJson.spaces2.getBytes)
     out.closeEntry()
 

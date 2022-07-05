@@ -19,9 +19,6 @@ object OuProperties {
   implicit val OuPropertiesDecoder: Decoder[OuProperties] = deriveDecoder[OuProperties]
   implicit val OuPropertiesEncoder: Encoder[OuProperties] = deriveEncoder[OuProperties].mapJson(_.deepDropNullValues)
 
-//  implicit val jsonOptionDiffInstance: Diff[Option[Json]] = JsonDiffInstance.diffForOptionJson(implicitly[Diff[String]])
-//  implicit val jsonOptionListDiffInstance: Diff[Option[List[Json]]] = JsonDiffInstance.diffForOptionListJson(implicitly[Diff[String]])
-
   implicit val OuPropertiesDiff = Diff.derived[OuProperties]
 
 }
