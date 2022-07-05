@@ -18,7 +18,7 @@ def process_scenario(randomness):
     sum(results[:, 0]) / run_count,
     sum(results[:, 1]) / run_count,
     sum(results[:, 2]) / run_count,
-    # sum(results[:, 3]) / run_count,
+    sum(results[:, 3]) / run_count,
   ]
 
 def process_run(randomness, run):
@@ -43,7 +43,7 @@ def process_run(randomness, run):
 
   return [
     metrics.accuracy_score(test_labels, test_pred),
-    # metrics.precision_score(test_labels, test_pred),
+    metrics.precision_score(test_labels, test_pred),
     metrics.recall_score(test_labels, test_pred),
     metrics.f1_score(test_labels, test_pred)
   ]
@@ -54,10 +54,30 @@ results = np.array(list(map(process_scenario, randomness)))
 
 plt.title("Anomaly detection")
 plt.xlabel("Randomness")
+plt.ylabel(f'Mean accuracy score over {run_count} runs')
+plt.plot(randomness, results[:, 0], color='red')
+plt.savefig('plots/Accuracy.png')
+plt.clf()
+
+plt.title("Anomaly detection")
+plt.xlabel("Randomness")
+plt.ylabel(f'Mean precision score over {run_count} runs')
+plt.plot(randomness, results[:, 1], color='green')
+plt.savefig('plots/Precision.png')
+plt.clf()
+
+plt.title("Anomaly detection")
+plt.xlabel("Randomness")
+plt.ylabel(f'Mean recall score over {run_count} runs')
+
+plt.plot(randomness, results[:, 2], color='green')
+plt.savefig('plots/Recall.png')
+plt.clf()
+
+plt.title("Anomaly detection")
+plt.xlabel("Randomness")
 plt.ylabel(f'Mean F1 score over {run_count} runs')
 
-# plt.plot(randomness, results[:, 0], color='red')
-# plt.plot(randomness, results[:, 1], color='green')
-plt.plot(randomness, results[:, 2], color='blue')
-# plt.scatter(randomness, list(map(lambda xs: sum(xs) / len(xs), results[:, 2])))
-plt.show()
+plt.plot(randomness, results[:, 3], color='green')
+plt.savefig('plots/F1.png')
+plt.clf()
