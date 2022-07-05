@@ -1,7 +1,6 @@
 package net.bstjohn.ad.preprocessing
 
 import cats.effect.IO
-import net.bstjohn.ad.generator.format.common.EntityId.UserId
 import net.bstjohn.ad.generator.generators.model.EpochSeconds
 import net.bstjohn.ad.generator.snapshots.DbSnapshot
 import net.bstjohn.ad.preprocessing.diffs._

@@ -2,7 +2,6 @@ package net.bstjohn.ad.generator.format.users
 
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder, Json}
-import net.bstjohn.ad.preprocessing.diffs.JsonDiffInstance
 
 case class UserProperties(
   domain: String,
