@@ -70,7 +70,11 @@ object UserChanges {
       .filter(_.membersAdded.exists(_.ObjectIdentifier == user.ObjectIdentifier.value))
 
     val groupsInherited = groupsJoined.flatMap(g =>
-      allGroupsRec(g.group.ObjectIdentifier, finalRelations.groupMemberships, groupsJoined.map(_.group.ObjectIdentifier), user.ObjectIdentifier == UserId("attacker-id-123")))
+      allGroupsRec(
+        g.group.ObjectIdentifier,
+        finalRelations.groupMemberships,
+        groupsJoined.map(_.group.ObjectIdentifier),
+        debug = user.ObjectIdentifier == UserId("attacker-id-123")))
 
     val acesGained = finalRelations.accessControlEntries.filter(ace => groupsInherited.exists(gid => gid.value == ace.sourceId))
 

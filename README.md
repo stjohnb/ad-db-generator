@@ -16,7 +16,7 @@ sbt test
 sbt run
 ```
 
-### Train and SVM classifier on the generated data
+### Train an SVM classifier on the generated data
 
 ```bash
 make init && make run

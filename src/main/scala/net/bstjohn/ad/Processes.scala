@@ -22,8 +22,8 @@ object Processes {
     for {
       _ <- recreateDir(new File(SnapshotsOutputDir))
       _ <- recreateDir(new File("feature-vectors"))
-      _ <- (1 to 20).flatMap(rand =>
-        (1 to 10).map(run =>
+      _ <- (1 to 2).flatMap(rand =>
+        (1 to 2).map(run =>
           DatabaseEvolution.writeToDisk(
             RecreateRealDb.evolution(s"randomness-${rand}_run-$run", rand),
             SnapshotsOutputDir

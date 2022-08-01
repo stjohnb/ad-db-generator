@@ -13,7 +13,7 @@ class ScenariosSpec
 
     val diff = SnapshotDiff.from(previous, latest)
 
-    val domainAdminsGroup = latest.groups.domainAdminsGroup.getOrElse(fail("No domain admins group"))
+    val domainAdminsGroup = latest.groups.flatMap(_.domainAdminsGroup).getOrElse(fail("No domain admins group"))
 
     val inverted = InvertedRelations.from(latest)
 

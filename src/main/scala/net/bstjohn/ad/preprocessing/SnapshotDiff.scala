@@ -10,7 +10,8 @@ case class SnapshotDiff (
   to: EpochSeconds,
   changedUsers: UsersDiff,
   changedGroups: GroupsDiff,
-  userChanges: Seq[UserChanges]
+  userChanges: Seq[UserChanges],
+  groupedUserChanges: Seq[GroupedUserChanges]
 )
 
 object SnapshotDiff {
@@ -22,11 +23,18 @@ object SnapshotDiff {
     val userDiffs = UsersDiff.from(initial, finalSnapshot)
     val groupDiffs = GroupsDiff.from(initial, finalSnapshot)
 
-    val userChanges = finalSnapshot.users.data.map(u =>
-      UserChanges(u, groupDiffs, initialRelations, finalRelations, finalSnapshot.lateralMovementIds)
+    val userChanges = finalSnapshot.users.toSeq.flatMap(_.data).map(u =>
+      UserChanges(u, groupDiffs, initialRelations, finalRelations, finalSnapshot.lateralMovementIds.getOrElse(Seq.empty))
+    )
+
+    val groupedUserChanges = GroupedUserChanges.from(
+      userChanges = userChanges,
+      computers = initial.computers.toSeq.flatMap(_.data) ++ finalSnapshot.computers.toSeq.flatMap(_.data),
+      groups = initial.groups.map(_.data).getOrElse(Seq.empty),
+      groupsMap = initialRelations.groupMemberships
     ).filter(_.isChanged)
 
-    SnapshotDiff(initial.epoch, finalSnapshot.epoch, userDiffs, groupDiffs, userChanges)
+    SnapshotDiff(initial.epoch, finalSnapshot.epoch, userDiffs, groupDiffs, userChanges, groupedUserChanges)
   }
 
   def writeUserChanges(diff: SnapshotDiff, path: String): IO[Unit] = {
@@ -34,7 +42,7 @@ object SnapshotDiff {
   }
 
   def writeAllUserChanges(diffs: Seq[SnapshotDiff], path: String): IO[Unit] = {
-    val userChanges = diffs.flatMap(_.userChanges)
+    val userChanges = diffs.flatMap(_.groupedUserChanges)
     val lateralMovements = userChanges.filter(_.isLateralMovement)
     val nonLateralMovements = userChanges.filterNot(_.isLateralMovement)
     val split = nonLateralMovements.map {
@@ -42,17 +50,17 @@ object SnapshotDiff {
       case l => Left(l)
     }
 
-    val train: Seq[UserChanges] = split.collect {
+    val train: Seq[GroupedUserChanges] = split.collect {
       case Right(l) => l
     }
-    val test: Seq[UserChanges] = split.collect {
+    val test: Seq[GroupedUserChanges] = split.collect {
       case Left(l) => l
     } ++ lateralMovements
 
     for {
       //    _ <- UserChanges.writeToDisk(diffs.flatMap(_.userChanges), s"$path/all-changes.csv")
-      _ <- UserChanges.writeToDisk(train, s"$path/train.csv")
-      _ <- UserChanges.writeToDisk(test, s"$path/test.csv")
+      _ <- GroupedUserChanges.writeToDisk(train, s"$path/train.csv")
+      _ <- GroupedUserChanges.writeToDisk(test, s"$path/test.csv")
       //    _ <- UserChanges.writeToDisk(diffs.flatMap(_.userChanges).take(20), s"$path/small-changes.csv")
     } yield ()
   }

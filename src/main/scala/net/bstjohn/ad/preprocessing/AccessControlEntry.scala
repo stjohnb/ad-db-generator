@@ -20,7 +20,7 @@ object AccessControlEntry {
   implicit val AccessControlEntryEncoder: Encoder[AccessControlEntry] = deriveEncoder[AccessControlEntry]
 
   def from(snapshot: DbSnapshot): Seq[AccessControlEntry] = {
-    val computerAces = snapshot.computers.data.flatMap { computer =>
+    val computerAces = snapshot.computers.toSeq.flatMap(_.data).flatMap { computer =>
       computer.Aces.map { ace =>
         AccessControlEntry(
           AccessControlEntryEntityType(ace.PrincipalType),
@@ -32,7 +32,7 @@ object AccessControlEntry {
       }
     }
 
-    val containerAces = snapshot.containers.data.flatMap { container =>
+    val containerAces = snapshot.containers.toSeq.flatMap(_.data).flatMap { container =>
       container.Aces.map { ace =>
         AccessControlEntry(
           AccessControlEntryEntityType(ace.PrincipalType),
@@ -44,7 +44,7 @@ object AccessControlEntry {
       }
     }
 
-    val domainAces = snapshot.domains.data.flatMap { domain =>
+    val domainAces = snapshot.domains.toSeq.flatMap(_.data).flatMap { domain =>
       domain.Aces.map { ace =>
         AccessControlEntry(
           AccessControlEntryEntityType(ace.PrincipalType),
@@ -56,7 +56,7 @@ object AccessControlEntry {
       }
     }
 
-    val gpoAces = snapshot.gpos.data.flatMap{ gpo =>
+    val gpoAces = snapshot.gpos.toSeq.flatMap(_.data).flatMap{ gpo =>
       gpo.Aces.map { ace =>
         AccessControlEntry(
           AccessControlEntryEntityType(ace.PrincipalType),
@@ -68,7 +68,7 @@ object AccessControlEntry {
       }
     }
 
-    val groupAces = snapshot.groups.data.flatMap{ group =>
+    val groupAces = snapshot.groups.toSeq.flatMap(_.data).flatMap{ group =>
       group.Aces.map { ace =>
         AccessControlEntry(
           AccessControlEntryEntityType(ace.PrincipalType),
@@ -80,7 +80,7 @@ object AccessControlEntry {
       }
     }
 
-    val ouAces = snapshot.ous.data.flatMap{ ou =>
+    val ouAces = snapshot.ous.toSeq.flatMap(_.data).flatMap{ ou =>
       ou.Aces.map { ace =>
         AccessControlEntry(
           AccessControlEntryEntityType(ace.PrincipalType),
@@ -92,7 +92,7 @@ object AccessControlEntry {
       }
     }
 
-    val userAces = snapshot.users.data.flatMap{ user =>
+    val userAces = snapshot.users.toSeq.flatMap(_.data).flatMap{ user =>
       user.Aces.map { ace =>
         AccessControlEntry(
           AccessControlEntryEntityType(ace.PrincipalType),

@@ -14,13 +14,13 @@ class ExportsSpec extends CatsEffectSuite {
       "test-environment-snapshots/"), 2, (p, _) => p.getFileName.toString.endsWith(".zip")
     ).iterator().asScala.toList
 
-    for {
-      snapshotOpts <- zipFiles.map(ZipSnapshotReader.read(_, Some(Seq.empty))).sequence
-    } yield {
-      snapshotOpts.map { snapshotOpt =>
+    zipFiles.map{ zipFile =>
+      for {
+        snapshotOpt <- ZipSnapshotReader.read(zipFile, Some(Seq.empty))
+      } yield {
         assertEquals(snapshotOpt.isDefined, true)
       }
-    }
+    }.sequence
   }
 
   test("de-serialises all generated snapshots") {

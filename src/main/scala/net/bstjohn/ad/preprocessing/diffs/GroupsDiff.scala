@@ -33,13 +33,13 @@ object GroupsDiff {
     initial: DbSnapshot,
     updated: DbSnapshot
   ): GroupsDiff = {
-    val created = updated.groups.data.collect {
-      case g if !initial.groups.data.exists(_.ObjectIdentifier == g.ObjectIdentifier) =>
+    val created = updated.groups.toSeq.flatMap(_.data).collect {
+      case g if !initial.groups.toSeq.flatMap(_.data).exists(_.ObjectIdentifier == g.ObjectIdentifier) =>
         GroupUpdated(g, acesAdded = g.Aces.toSet, membersAdded = g.Members.toSet)
     }
 
-    val updates = updated.groups.data.flatMap { update =>
-      initial.groups.data.find(g => g.ObjectIdentifier == update.ObjectIdentifier) flatMap { previous =>
+    val updates = updated.groups.toSeq.flatMap(_.data).flatMap { update =>
+      initial.groups.toSeq.flatMap(_.data).find(g => g.ObjectIdentifier == update.ObjectIdentifier) flatMap { previous =>
         val acesAdded = update.Aces.toSet -- previous.Aces.toSet
         val membersAdded = update.Members.toSet -- previous.Members.toSet
 
@@ -51,8 +51,8 @@ object GroupsDiff {
       }
     }
 
-    val deleted = initial.groups.data.collect {
-      case g if !updated.groups.data.exists(_.ObjectIdentifier == g.ObjectIdentifier) =>
+    val deleted = initial.groups.toSeq.flatMap(_.data).collect {
+      case g if !updated.groups.toSeq.flatMap(_.data).exists(_.ObjectIdentifier == g.ObjectIdentifier) =>
         g
     }
 

@@ -27,9 +27,9 @@ case class DatabaseEvolution(
   def first: Option[DbSnapshot] = snapshots.headOption
   def second: Option[DbSnapshot] = snapshots.tail.headOption
 
-  def domain: Domain = latestSnapshot.domains.data.headOption.getOrElse(???)
+  def domain: Domain = latestSnapshot.domains.toSeq.flatMap(_.data).headOption.getOrElse(???)
   def timestamp: EpochSeconds = latestSnapshot.epoch
-  def users: Seq[User] = latestSnapshot.users.data
+  def users: Seq[User] = latestSnapshot.users.toSeq.flatMap(_.data).toSeq
 }
 
 object DatabaseEvolution {
