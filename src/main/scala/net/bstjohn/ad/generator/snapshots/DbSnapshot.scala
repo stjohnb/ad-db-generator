@@ -3,7 +3,7 @@ package net.bstjohn.ad.generator.snapshots
 import cats.effect.IO
 import io.circe.syntax._
 import net.bstjohn.ad.generator.format.common.EntityId.UserId
-import net.bstjohn.ad.generator.format.computers.{Computer, Computers, LocalAdminType}
+import net.bstjohn.ad.generator.format.computers.{Computer, Computers}
 import net.bstjohn.ad.generator.format.containers.Containers
 import net.bstjohn.ad.generator.format.domains.{Domain, Domains}
 import net.bstjohn.ad.generator.format.gpos.Gpos
@@ -65,7 +65,7 @@ case class DbSnapshot(
       computers = Some(definedComputers.updated { computer =>
         computer.withSessions(loggedInUsers)
       })
-    )
+    ).timestamp(epoch.plusMinutes(1))
   }).getOrElse(???)
 
   def timestamp(epoch: EpochSeconds): DbSnapshot =

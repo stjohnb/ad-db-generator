@@ -28,7 +28,7 @@ case class Computer(
   def withAce(ace: Ace): Computer = copy(Aces = Aces :+ ace)
 
   def withSessions(users: Seq[User]): Computer = {
-    val sessions = users.map(u => Session(u.ObjectIdentifier.value, ObjectIdentifier))
+    val sessions = users.map(u => Session(u.ObjectIdentifier, ObjectIdentifier))
 
     copy(Sessions = Sessions.withSessions(sessions))
   }

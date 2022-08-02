@@ -1,23 +1,23 @@
 package net.bstjohn.ad.generator.generators
 
 import net.bstjohn.ad.generator.format.ace.{Ace, RightName}
-import net.bstjohn.ad.generator.format.common.EntityId.GroupId
-import net.bstjohn.ad.generator.format.computers.LocalAdminType
-import net.bstjohn.ad.generator.format.groups.{Group, GroupMember}
-import net.bstjohn.ad.generator.generators.entities.ComputerGenerator.{generateComputer, generateComputers}
+import net.bstjohn.ad.generator.format.common.EntityId.{GroupId, UserId}
+import net.bstjohn.ad.generator.format.groups.{Group, GroupMemberType}
+import net.bstjohn.ad.generator.format.users.User
+import net.bstjohn.ad.generator.generators.entities.ComputerGenerator.generateComputers
 import net.bstjohn.ad.generator.generators.entities.DomainGenerator.generateDomain
 import net.bstjohn.ad.generator.generators.entities.GroupGenerator.{DomainAdminsGroupName, generateGroup}
 import net.bstjohn.ad.generator.generators.entities.UserGenerator.{generateUser, generateUsers}
 import net.bstjohn.ad.generator.generators.model.EpochSeconds
 import net.bstjohn.ad.generator.snapshots.{DatabaseEvolution, DbSnapshot}
 
-import java.util.{Calendar, GregorianCalendar, UUID}
+import java.util.{Calendar, GregorianCalendar}
 import scala.util.Random
 
 object DynamicDb {
 
-  def evolution(name: String, randomness: Int): DatabaseEvolution = {
-    def scaled(range: Range): Range = Range(range.start * randomness, range.end * randomness)
+  def evolution(name: String, scalingFactor: Int): Seq[DatabaseEvolution] = {
+    def scaled(range: Range): Range = Range(range.start * scalingFactor, range.end * scalingFactor)
     def sample(range: Range): Int = Random.nextInt(range.end - range.start) + range.start
 
     val date = new GregorianCalendar(2005, Calendar.FEBRUARY, 11).getTime
@@ -36,8 +36,12 @@ object DynamicDb {
         .withGroupMembers(Random.shuffle(s0.users).take(sample(scaled(1 to 2))))
         .withAces(Ace(helpdeskManagersGroup.ObjectIdentifier, RightName.GenericAll))
 
+    val domainAdminManagers =
+      generateGroup(domain, s0.timestamp.plusMinutes(5), "Domain admin managers")
+
     val s1 = s0.updated(
-      _.withUpdatedGroups(Seq(helpdeskManagersGroup, helpdeskGroup))
+      _.withUpdatedGroups(Seq(helpdeskManagersGroup, helpdeskGroup, domainAdminManagers))
+        .withUpdatedGroup(domainAdminsGroup.withAces(Ace(domainAdminManagers.ObjectIdentifier, RightName.GenericAll)))
         .withUpdatedUsers(generateUsers(scaled(1 to 10), domain, start, s1End).map(_.loggedOn(s1End)))
         .randomSessions()
         .timestamp(s1End))
@@ -71,44 +75,102 @@ object DynamicDb {
       _.timestamp(s6Start.plusDays(10))
         .randomSessions())
 
-    val s7 = (1 to 10).foldRight(s6.updated(_.clearLateralMovementIds))((i, evolution) => {
-      (if(i % 4 == 0) {
-        newGroupAndUsers(evolution, scaled, helpdeskGroup)
-      } else if(i % 2 == 0) {
-        newUsersAndComputers(evolution, scaled, helpdeskGroup)
-      } else {
-        newGroupExistingUsers(evolution, scaled, helpdeskGroup)
-      }).updated(_.randomSessions())
-    })
+    println(s"${s6.computers.size} computers, ${s6.users.size} users, ${s6.groups.size} groups, ${s6.computers.flatMap(_.allSessions).size} sessions")
 
-    s7.updated(randomHack(_, helpdeskGroup, helpdeskManagersGroup))
+    s6.users.zipWithIndex.map { case (user, index) =>
+      escalatePrivileges(user, index, s6, domainAdminsGroup, domainAdminManagers, helpdeskGroup, helpdeskManagersGroup)
+    }
   }
 
-  def randomHack(
-    snapshot: DbSnapshot,
+  def escalatePrivileges(
+    hackedUser: User,
+    index: Int,
+    ev: DatabaseEvolution,
+    domainAdminsGroup: Group,
+    domainAdminManagersGroup: Group,
     helpdeskGroup: Group,
     helpdeskManagersGroup: Group
-  ): DbSnapshot = for {
-    users <- snapshot.users
-    computers <- snapshot.computers
-    groups <- snapshot.groups
-  } yield {
-    val hackedComputer = Random.shuffle(computers.data.filter(_.Sessions.sessions.nonEmpty)).head
-    val user = Random.shuffle(hackedComputer.Sessions.sessions).head
+  ): DatabaseEvolution = {
 
-    val userGroups: Seq[GroupId] = groups.data.filter(_.Members.map(_.ObjectIdentifier).contains(user.userId.value)).map(_.ObjectIdentifier)
+    val userGroups = ev.groups
+      .filter(_.Members.map(_.ObjectIdentifier).contains(hackedUser.ObjectIdentifier.value))
+      .map(_.ObjectIdentifier)
 
-    val availableComputers = computers.data.filter { c =>
-      c.localAdmins.exists(a => a.ObjectIdentifier == user.UserSID) ||
+    val localAdminComputers = ev.computers.filter { c =>
+      c.localAdmins.exists(a => a.ObjectIdentifier == hackedUser.ObjectIdentifier.value) ||
         c.localAdmins.exists(a => userGroups.map(_.value).contains(a.ObjectIdentifier))
     }
 
-    val availableUsers = availableComputers.flatMap { c =>
-      c.allSessions.map(_.userId)
+    val availableUsers = localAdminComputers.flatMap { c =>
+      c.allSessions.map(_.UserSID)
     }
 
-    val availableGroups: Seq[GroupId] = availableUsers.map { userId =>
-      ???
+    val availableGroups: Seq[GroupId] = availableUsers.flatMap { userId =>
+      ev.groups.filter(_.Members.map(_.ObjectIdentifier).contains(userId.value)).map(_.ObjectIdentifier)
+    }
+
+    findPath(
+      ev,
+      hackedUser,
+      domainAdminsGroup,
+      domainAdminManagersGroup,
+      helpdeskGroup,
+      helpdeskManagersGroup,
+      availableGroups
+    ).updated(_.timestamp(ev.timestamp.plusDays(index)))
+  }
+
+  private def findPath(
+    ev: DatabaseEvolution,
+    hackedUser: User,
+    domainAdminsGroup: Group,
+    domainAdminManagersGroup: Group,
+    helpdeskGroup: Group,
+    helpdeskManagersGroup: Group,
+    availableGroups: Seq[GroupId]): DatabaseEvolution = {
+    if(availableGroups.contains(domainAdminsGroup.ObjectIdentifier)) {
+      // done. undetectable
+      println("already domain admin")
+      ev
+    } else if(availableGroups.contains(domainAdminManagersGroup.ObjectIdentifier)) {
+      // add self to domain admins
+      println(s"Add self to domain admins")
+      ev.updated(
+        _.withUpdatedGroup(domainAdminsGroup.withGroupMember(hackedUser))
+          .withLateralMovementIds(Seq(hackedUser.ObjectIdentifier)))
+    } else if(availableGroups.contains(helpdeskGroup.ObjectIdentifier)) {
+      // search for a domain admin manager
+      val domainAdminManagers = domainAdminManagersGroup.Members
+        .filter(_.ObjectType == GroupMemberType.User)
+        .map(_.ObjectIdentifier).map(UserId(_))
+
+      if(ev.computers.exists(_.allSessions.exists(s => domainAdminManagers.contains(s.UserSID)))){
+        println("Add self to domain admins via helpdesk -> domain admin managers")
+        ev.updated(
+          _.withUpdatedGroup(domainAdminsGroup.withGroupMember(hackedUser))
+          .withLateralMovementIds(Seq(hackedUser.ObjectIdentifier)))
+      } else {
+        println(s"No domain admin managers")
+        ev
+      }
+    } else if(availableGroups.contains(helpdeskManagersGroup.ObjectIdentifier)) {
+      // add self to helpdesk group
+      println(s"Add self to helpdesk")
+      findPath(
+        ev.updated(
+          _.withUpdatedGroup(helpdeskGroup.withGroupMember(hackedUser))
+          .withLateralMovementIds(Seq(hackedUser.ObjectIdentifier))),
+        hackedUser,
+        domainAdminsGroup,
+        domainAdminManagersGroup,
+        helpdeskGroup,
+        helpdeskManagersGroup,
+        availableGroups :+ helpdeskGroup.ObjectIdentifier
+      )
+    } else {
+      // not hacked
+      println("No hack")
+      ev
     }
   }
 
@@ -127,64 +189,6 @@ object DynamicDb {
         List.empty,
         start,
         Seq.empty)))
-  }
-
-  private def newUsersAndComputers(
-    evolution: DatabaseEvolution,
-    random: Range => Range,
-    helpdeskGroup: Group
-  ): DatabaseEvolution = {
-    val start = evolution.timestamp.plusMinutes(5)
-    val end = evolution.timestamp.plusMonths(1)
-
-    val newUsers = generateUsers(random(1 to 20), evolution.domain, start, end)
-    val newComputers = generateComputers(random(1 to 10), evolution.domain, start, end, Some(helpdeskGroup))
-
-    evolution.updated(
-      _.withNewComputers(newComputers)
-        .withUpdatedUsers(newUsers)
-        .timestamp(evolution.timestamp.plusMonths(1)))
-  }
-
-  private def newGroupAndUsers(
-    evolution: DatabaseEvolution,
-    random: Range => Range,
-    helpdeskGroup: Group
-  ): DatabaseEvolution = {
-    val start = evolution.timestamp.plusMinutes(5)
-    val end = evolution.timestamp.plusMonths(1)
-
-    val newUsers = generateUsers(random(1 to 20), evolution.domain, start, end)
-    val newGroup = generateGroup(evolution.domain, start, s"Autogenerated group ${UUID.randomUUID()}")
-      .withGroupMembers(newUsers)
-
-    val newComputers = generateComputers(random(1 to 10), evolution.domain, start, end, Some(helpdeskGroup))
-      .map(_.withAce(Ace(newGroup.ObjectIdentifier, RightName.GenericAll)))
-
-    evolution.updated(
-      _.withUpdatedGroup(newGroup)
-        .withNewComputers(newComputers)
-        .withUpdatedUsers(newUsers)
-        .timestamp(evolution.timestamp.plusMonths(1)))
-  }
-
-  private def newGroupExistingUsers(
-    evolution: DatabaseEvolution,
-    random: Range => Range,
-    helpdeskGroup: Group
-  ): DatabaseEvolution = {
-    val start = evolution.timestamp.plusMinutes(5)
-    val end = evolution.timestamp.plusMonths(1)
-
-    val newGroup = generateGroup(evolution.domain, start, s"Autogenerated group ${UUID.randomUUID()}")
-      .withGroupMembers(evolution.users.filter(_ => Random.nextBoolean() && Random.nextBoolean()))
-
-    val newComputers = generateComputers(random(1 to 10), evolution.domain, start, end, Some(helpdeskGroup))
-
-    evolution.updated(
-      _.withUpdatedGroup(newGroup)
-        .withNewComputers(newComputers)
-        .timestamp(evolution.timestamp.plusMonths(1)))
   }
 
   private def addUsers(

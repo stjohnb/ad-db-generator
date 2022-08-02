@@ -2,7 +2,7 @@ package net.bstjohn.ad.generator.generators.entities
 
 import io.circe.JsonObject
 import io.circe.syntax.EncoderOps
-import net.bstjohn.ad.generator.format.computers.{Computer, ComputerProperties, LocalAdmins, Sessions}
+import net.bstjohn.ad.generator.format.computers.{Computer, ComputerProperties, LocalAdmin, LocalAdmins, Sessions}
 import net.bstjohn.ad.generator.format.domains.Domain
 import net.bstjohn.ad.generator.format.groups.Group
 import net.bstjohn.ad.generator.generators.common.CommonGenerators._
@@ -87,7 +87,7 @@ object ComputerGenerator {
   )
 
   private def genLocalAdmins(localAdminsGroup: Option[Group]) = LocalAdmins(
-    Results = genOption().map(_ => List.empty),
+    Results = localAdminsGroup.map(g => List(LocalAdmin.fromGroup(g))),
     Collected = genOption().map(_ => genBoolean()),
     FailureReason = genOption().map(_ => genJsonObject().asJson)
   )

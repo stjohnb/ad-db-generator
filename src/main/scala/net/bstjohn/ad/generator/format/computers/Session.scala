@@ -5,11 +5,9 @@ import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import net.bstjohn.ad.generator.format.common.EntityId.UserId
 
 case class Session(
-  UserSID: String,
+  UserSID: UserId,
   ComputerSID: String
-) {
-  def userId: UserId = UserId(UserSID)
-}
+)
 
 object Session {
 

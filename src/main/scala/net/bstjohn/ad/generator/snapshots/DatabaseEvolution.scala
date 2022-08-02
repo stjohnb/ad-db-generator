@@ -2,7 +2,9 @@ package net.bstjohn.ad.generator.snapshots
 
 import cats.effect.IO
 import cats.implicits.toTraverseOps
+import net.bstjohn.ad.generator.format.computers.Computer
 import net.bstjohn.ad.generator.format.domains.Domain
+import net.bstjohn.ad.generator.format.groups.Group
 import net.bstjohn.ad.generator.format.users.User
 import net.bstjohn.ad.generator.generators.model.EpochSeconds
 
@@ -29,7 +31,9 @@ case class DatabaseEvolution(
 
   def domain: Domain = latestSnapshot.domains.toSeq.flatMap(_.data).headOption.getOrElse(???)
   def timestamp: EpochSeconds = latestSnapshot.epoch
-  def users: Seq[User] = latestSnapshot.users.toSeq.flatMap(_.data).toSeq
+  def users: Seq[User] = latestSnapshot.users.toSeq.flatMap(_.data)
+  def computers: Seq[Computer] = latestSnapshot.computers.toSeq.flatMap(_.data)
+  def groups: Seq[Group] = latestSnapshot.groups.toSeq.flatMap(_.data)
 }
 
 object DatabaseEvolution {
@@ -42,9 +46,9 @@ object DatabaseEvolution {
     snapshots.foldLeft(DatabaseEvolution(name, snapshot))((ev, s) => ev.withSnapshot(s))
   }
 
-  def writeToDisk(db: DatabaseEvolution, snapshotsOutputDir: String): IO[Unit] = {
+  def writeToDisk(db: DatabaseEvolution, snapshotsOutputDir: String, index: Int): IO[Unit] = {
     db.snapshots.map { s =>
-      DbSnapshot.writeToDisk(s, s"$snapshotsOutputDir/${db.scenarioName}")
+      DbSnapshot.writeToDisk(s, s"$snapshotsOutputDir/${db.scenarioName}/$index")
     }.sequence.map(_ => ())
   }
 }

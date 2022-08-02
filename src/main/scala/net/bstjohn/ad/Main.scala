@@ -8,7 +8,7 @@ object Main extends IOApp.Simple {
 
   def run: IO[Unit] = for {
     _ <- Processes.generateScenarioSnapshots
-    _ <- Processes.generateTestEnvironmentDiffs
+//    _ <- Processes.generateTestEnvironmentDiffs
     _ <- Processes.generateScenarioDiffs
 //    _ <- AdCsvImportGenerator.gen
   } yield ()
