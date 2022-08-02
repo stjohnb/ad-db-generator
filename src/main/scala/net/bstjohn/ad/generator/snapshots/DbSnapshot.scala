@@ -28,7 +28,7 @@ case class DbSnapshot(
   lateralMovementIds: Option[Seq[UserId]]
 ) {
   def withUpdatedGroup(group: Group): DbSnapshot = {
-    val defined = groups.getOrElse(Groups.Empty)
+    val defined = groups.getOrElse(???)
     copy(groups = Some(defined.copy(
       data = defined.data.toList.filter(g => g.ObjectIdentifier != group.ObjectIdentifier) :+ group)))
   }
@@ -37,7 +37,7 @@ case class DbSnapshot(
     groups.foldLeft(this)((s, g) => s.withUpdatedGroup(g))
 
   def withUpdatedUser(user: User): DbSnapshot = {
-    val defined = users.getOrElse(Users.Empty)
+    val defined = users.getOrElse(???)
     copy(users = Some(defined.copy(
         data = defined.data.toList.filter(d => d.ObjectIdentifier != user.ObjectIdentifier) :+ user)))
   }
@@ -46,33 +46,41 @@ case class DbSnapshot(
     users.foldLeft(this)((s, u) => s.withUpdatedUser(u))
 
   def withNewComputer(computer: Computer): DbSnapshot = {
-    val defined = computers.getOrElse(Computers.Empty)
+    val defined = computers.getOrElse(???)
     copy(computers = Some(defined.copy(data = defined.data :+ computer)))
   }
 
   def withNewComputers(newComputers: Seq[Computer]): DbSnapshot = {
-    val defined = computers.getOrElse(Computers.Empty)
+    val defined = computers.getOrElse(???)
     copy(computers = Some(defined.copy(data = defined.data ++ newComputers)))
   }
 
-  def randomSessions(): DbSnapshot = (for {
-    definedUsers <- users
-    definedComputers <- computers
-  } yield {
-    val loggedInUsers = Random.shuffle(definedUsers.data).take(10)
+  def withUpdatedComputers(updatedComputers: Seq[Computer]): DbSnapshot = {
+    val ids = updatedComputers.map(_.ObjectIdentifier)
+    val defined = computers.getOrElse(???)
 
-    copy(
-      computers = Some(definedComputers.updated { computer =>
-        computer.withSessions(loggedInUsers)
-      })
-    ).timestamp(epoch.plusMinutes(1))
-  }).getOrElse(???)
+    copy(computers = Some(defined.copy(data =
+      defined.data.filterNot(c => ids.contains(c.ObjectIdentifier)) ++ updatedComputers)))
+  }
+
+  def randomSessions(): DbSnapshot = {
+    users.get.data.foldRight(this)((user, snapshot) => {
+      if(Random.nextBoolean()){
+        val computers = Random.shuffle(snapshot.computers.get.data).take(2)
+
+        snapshot.withUpdatedComputers(computers.map(_.addSession(user)))
+      } else {
+        snapshot
+      }
+    }).timestamp(epoch.plusMinutes(1))
+  }
 
   def timestamp(epoch: EpochSeconds): DbSnapshot =
     this.copy(epoch = epoch)
 
   def withLateralMovementIds(lateralMovementIds: Seq[UserId]): DbSnapshot =
     this.copy(lateralMovementIds = Some(lateralMovementIds))
+      .timestamp(epoch.plusMinutes(1))
 
   def clearLateralMovementIds: DbSnapshot =
     this.copy(lateralMovementIds = None).timestamp(epoch.plusMinutes(1))

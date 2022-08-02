@@ -3,7 +3,7 @@ package net.bstjohn.ad.generator.format.groups
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder}
 import net.bstjohn.ad.generator.format.ace.Ace
-import net.bstjohn.ad.generator.format.common.EntityId.GroupId
+import net.bstjohn.ad.generator.format.common.EntityId.{GroupId, UserId}
 import net.bstjohn.ad.generator.format.users.User
 
 case class Group(
@@ -18,6 +18,10 @@ case class Group(
   def withGroupMember(user: User): Group =
     copy(
       Members = Members.toList :+ GroupMember.fromUser(user))
+
+  def withGroupMember(userId: UserId): Group =
+    copy(
+      Members = Members.toList :+ GroupMember.user(userId))
 
   def withGroupMember(group: Group): Group =
     copy(

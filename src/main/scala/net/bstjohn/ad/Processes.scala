@@ -5,7 +5,6 @@ import cats.implicits._
 import net.bstjohn.ad.generator.format.common.EntityId.UserId
 import net.bstjohn.ad.generator.generators.DynamicDb
 import net.bstjohn.ad.generator.reader.ZipSnapshotReader
-import net.bstjohn.ad.generator.snapshots.DatabaseEvolution
 import net.bstjohn.ad.preprocessing.SnapshotDiff
 import org.apache.commons.io.FileUtils
 
@@ -22,13 +21,13 @@ object Processes {
     for {
       _ <- recreateDir(new File(SnapshotsOutputDir))
       _ <- recreateDir(new File("feature-vectors"))
-      randomnessEvolutions = (1 to 2).flatMap(rand =>
-        (1 to 2).map(run =>
-          DynamicDb.evolution(s"randomness-${rand}_run-$run", rand)))
-      _ <- randomnessEvolutions.flatMap(_.zipWithIndex.map{
-        case (evolution, index) =>
-          DatabaseEvolution.writeToDisk(evolution, SnapshotsOutputDir, index)
-        }).toList.sequence
+      _ = (1 to 1).flatMap(rand =>
+        (1 to 1).map(run =>
+          DynamicDb(s"randomness-${rand}_run-$run", rand).evolution))
+//      _ <- randomnessEvolutions.flatMap(_.zipWithIndex.map{
+//        case (evolution, index) =>
+//          DatabaseEvolution.writeToDisk(evolution, SnapshotsOutputDir, index)
+//        }).toList.sequence
 //        (1 to loopCount).map(i => Scenarios.nestedGroups(s"nested-groups-$i")) ++
 //        (1 to loopCount).map(i => Scenarios.geographicallyNestedGroups(s"geographic-$i"))
 //      _ <- scenarios.map(scenario => DatabaseEvolution.writeToDisk(scenario, SnapshotsOutputDir)).toList.sequence

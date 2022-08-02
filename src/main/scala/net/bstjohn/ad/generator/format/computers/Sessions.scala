@@ -12,6 +12,13 @@ case class Sessions(
 
   def withSessions(sessions: Seq[Session]): Sessions =
     copy(Results = Some(sessions))
+
+  def addSession(session: Session): Sessions = Results match {
+    case Some(sessions) =>
+      copy(Results = Some(sessions :+ session))
+    case None =>
+      copy(Results = Some(Seq(session)))
+  }
 }
 
 object Sessions {

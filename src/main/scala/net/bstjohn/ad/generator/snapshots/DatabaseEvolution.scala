@@ -2,6 +2,7 @@ package net.bstjohn.ad.generator.snapshots
 
 import cats.effect.IO
 import cats.implicits.toTraverseOps
+import net.bstjohn.ad.generator.format.common.EntityId.GroupId
 import net.bstjohn.ad.generator.format.computers.Computer
 import net.bstjohn.ad.generator.format.domains.Domain
 import net.bstjohn.ad.generator.format.groups.Group
@@ -34,6 +35,8 @@ case class DatabaseEvolution(
   def users: Seq[User] = latestSnapshot.users.toSeq.flatMap(_.data)
   def computers: Seq[Computer] = latestSnapshot.computers.toSeq.flatMap(_.data)
   def groups: Seq[Group] = latestSnapshot.groups.toSeq.flatMap(_.data)
+
+  def group(groupId: GroupId): Group = groups.find(_.ObjectIdentifier == groupId).get
 }
 
 object DatabaseEvolution {

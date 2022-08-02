@@ -33,6 +33,10 @@ case class Computer(
     copy(Sessions = Sessions.withSessions(sessions))
   }
 
+  def addSession(user: User): Computer = {
+    copy(Sessions = Sessions.addSession(Session(user.ObjectIdentifier, ObjectIdentifier)))
+  }
+
   def withAces(aces: Seq[Ace]): Computer = copy(Aces = Aces ++ aces)
 
   def ownedBy(group: Group): Computer =
