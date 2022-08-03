@@ -2,6 +2,7 @@ package net.bstjohn.ad.generator.format.groups
 
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder}
+import net.bstjohn.ad.generator.format.common.EntityId.UserId
 import net.bstjohn.ad.generator.format.users.User
 
 case class GroupMember(
@@ -24,6 +25,15 @@ object GroupMember {
       GroupMemberType.User
     )
   }
+
+  def user(userId: UserId): GroupMember = {
+    GroupMember(
+      userId.value,
+      GroupMemberType.User
+    )
+  }
+
+
 
   def fromComputer(): GroupMember = ???
 

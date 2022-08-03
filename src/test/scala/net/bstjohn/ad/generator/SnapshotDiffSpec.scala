@@ -21,7 +21,7 @@ class SnapshotDiffSpec extends CatsEffectSuite {
 
       val change = diff.userChanges.find(_.userId == attackerId)
 
-      assertEquals(diff.userChanges.size, 1)
+      assertEquals(diff.userChanges.count(_.isChanged), 1)
       assertEquals(change.map(_.groupsJoined), Some(1))
     }
   }

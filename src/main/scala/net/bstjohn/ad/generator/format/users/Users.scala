@@ -13,6 +13,8 @@ object Users {
   implicit val UsersDecoder: Decoder[Users] = deriveDecoder[Users]
   implicit val UsersEncoder: Encoder[Users] = deriveEncoder[Users].mapJson(_.deepDropNullValues)
 
+  val Empty = Users(Seq.empty)
+
   def apply(users: Seq[User]): Users = {
     Users(users, Meta(MetaType.users, users.size))
   }

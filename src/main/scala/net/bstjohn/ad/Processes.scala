@@ -3,7 +3,7 @@ package net.bstjohn.ad
 import cats.effect.IO
 import cats.implicits._
 import net.bstjohn.ad.generator.format.common.EntityId.UserId
-import net.bstjohn.ad.generator.generators.RecreateRealDb
+import net.bstjohn.ad.generator.generators.DynamicDb
 import net.bstjohn.ad.generator.reader.ZipSnapshotReader
 import net.bstjohn.ad.generator.snapshots.DatabaseEvolution
 import net.bstjohn.ad.preprocessing.SnapshotDiff
@@ -22,12 +22,10 @@ object Processes {
     for {
       _ <- recreateDir(new File(SnapshotsOutputDir))
       _ <- recreateDir(new File("feature-vectors"))
-      _ <- (1 to 20).flatMap(rand =>
-        (1 to 10).map(run =>
-          DatabaseEvolution.writeToDisk(
-            RecreateRealDb.evolution(s"randomness-${rand}_run-$run", rand),
-            SnapshotsOutputDir
-          ))).toList.sequence
+      evolutionForks = DynamicDb(s"DynamicDb", 10).evolutionForks
+      _ <- DatabaseEvolution.writeToDisk(evolutionForks.baseEvolution, SnapshotsOutputDir)
+      _ <- DatabaseEvolution.writeFinalForksToDisk(evolutionForks, SnapshotsOutputDir)
+
 //        (1 to loopCount).map(i => Scenarios.nestedGroups(s"nested-groups-$i")) ++
 //        (1 to loopCount).map(i => Scenarios.geographicallyNestedGroups(s"geographic-$i"))
 //      _ <- scenarios.map(scenario => DatabaseEvolution.writeToDisk(scenario, SnapshotsOutputDir)).toList.sequence
@@ -71,6 +69,7 @@ object Processes {
     val scenarios = Files.walk(Paths.get(SnapshotsOutputDir)).iterator().asScala.toList
       .filter(Files.isDirectory(_))
       .filter(_.toString != SnapshotsOutputDir)
+      .filterNot(_.toString.endsWith("final_forks"))
 
     for {
       _ <- recreateDir(DiffsOutputDir)
@@ -81,21 +80,31 @@ object Processes {
   private def generateDiffs(scenario: Path): IO[Seq[SnapshotDiff]] = {
     val files = Files.walk(scenario).iterator().asScala.toList
       .filter(_.toString.endsWith("zip"))
+      .filterNot(_.toString.contains("final_forks"))
       .sortBy(p => p.getFileName.toString)
 
     val pairs: Seq[List[Path]] = files.sliding(2).toList
     val scenarioName = scenario.getFileName.toString
 
+    val penultimateSnapshot = files.last
+
+    val forks = Files.walk(scenario.resolve("final_forks")).iterator().asScala.toList
+      .filter(_.toString.endsWith("zip"))
+
+
     for {
       _ <- recreateDir(new File(s"$DiffsOutputDir/$scenarioName"))
       diffOpts <- pairs.map {
-        case List(initialName, updatedName) =>
-          produceDiff((initialName, None), (updatedName, None))
+        case List(initial, updated) =>
+          produceDiff((initial, None), (updated, None))
 
         case _ => IO.pure(None)
       }.sequence
-      diffs = diffOpts.flatten
-//      _ <- diffs.map(SnapshotDiff.writeUserChanges(_, s"$DiffsOutputDir/$scenarioName")).sequence
+      forkDiffs <- forks.map { fork =>
+        produceDiff((penultimateSnapshot, None), (fork, None))
+      }.sequence
+      diffs = (diffOpts ++ forkDiffs).flatten
+      _ <- diffs.map(SnapshotDiff.writeUserChanges(_, s"$DiffsOutputDir/$scenarioName")).sequence
       outputDir = s"feature-vectors/$scenarioName"
       _ <- recreateDir(new File(outputDir))
       _ <- SnapshotDiff.writeAllUserChanges(diffs, outputDir)

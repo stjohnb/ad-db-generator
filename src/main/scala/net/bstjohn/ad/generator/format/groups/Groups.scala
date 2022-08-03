@@ -16,15 +16,12 @@ object Groups {
   implicit val GroupsDecoder: Decoder[Groups] = deriveDecoder[Groups]
   implicit val GroupsEncoder: Encoder[Groups] = deriveEncoder[Groups].mapJson(_.deepDropNullValues)
 
+  val Empty = Groups(Seq.empty)
+
   def apply(groups: Seq[Group]): Groups = {
     Groups(
       data = groups,
-      meta = Meta(
-        methods = 29675,
-        `type` = MetaType.groups,
-        count = groups.size,
-        version = 4
-      )
+      meta = Meta(MetaType.groups, groups.size)
     )
   }
 

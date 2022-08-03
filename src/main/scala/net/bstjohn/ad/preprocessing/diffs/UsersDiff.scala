@@ -30,13 +30,13 @@ object UsersDiff {
   val empty = UsersDiff(List.empty, List.empty, List.empty)
 
   def from(s1: DbSnapshot, s2: DbSnapshot): UsersDiff = {
-    val created = s2.users.data.collect {
-      case u if !s1.users.data.exists(_.ObjectIdentifier == u.ObjectIdentifier) =>
+    val created = s2.users.toSeq.flatMap(_.data).collect {
+      case u if !s1.users.toSeq.flatMap(_.data).exists(_.ObjectIdentifier == u.ObjectIdentifier) =>
         u
     }
 
-    val updates = s2.users.data.flatMap { update =>
-      s1.users.data.find(g => g.ObjectIdentifier == update.ObjectIdentifier) match {
+    val updates = s2.users.toSeq.flatMap(_.data).flatMap { update =>
+      s1.users.toSeq.flatMap(_.data).find(g => g.ObjectIdentifier == update.ObjectIdentifier) match {
         case Some(previous) if previous != update =>
           Some(UserUpdated(
             name = previous.Properties.name,
@@ -48,8 +48,8 @@ object UsersDiff {
       }
     }
 
-    val deleted = s1.users.data.collect {
-      case g if !s2.users.data.exists(_.ObjectIdentifier == g.ObjectIdentifier) =>
+    val deleted = s1.users.toSeq.flatMap(_.data).collect {
+      case g if !s2.users.toSeq.flatMap(_.data).exists(_.ObjectIdentifier == g.ObjectIdentifier) =>
         g
     }
 

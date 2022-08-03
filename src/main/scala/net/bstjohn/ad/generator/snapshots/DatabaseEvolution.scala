@@ -2,7 +2,10 @@ package net.bstjohn.ad.generator.snapshots
 
 import cats.effect.IO
 import cats.implicits.toTraverseOps
+import net.bstjohn.ad.generator.format.common.EntityId.GroupId
+import net.bstjohn.ad.generator.format.computers.Computer
 import net.bstjohn.ad.generator.format.domains.Domain
+import net.bstjohn.ad.generator.format.groups.Group
 import net.bstjohn.ad.generator.format.users.User
 import net.bstjohn.ad.generator.generators.model.EpochSeconds
 
@@ -27,12 +30,22 @@ case class DatabaseEvolution(
   def first: Option[DbSnapshot] = snapshots.headOption
   def second: Option[DbSnapshot] = snapshots.tail.headOption
 
-  def domain: Domain = latestSnapshot.domains.data.headOption.getOrElse(???)
+  def domain: Domain = latestSnapshot.domains.toSeq.flatMap(_.data).headOption.getOrElse(???)
   def timestamp: EpochSeconds = latestSnapshot.epoch
-  def users: Seq[User] = latestSnapshot.users.data
+  def users: Seq[User] = latestSnapshot.users.toSeq.flatMap(_.data)
+  def computers: Seq[Computer] = latestSnapshot.computers.toSeq.flatMap(_.data)
+  def groups: Seq[Group] = latestSnapshot.groups.toSeq.flatMap(_.data)
+
+  def group(groupId: GroupId): Group = groups.find(_.ObjectIdentifier == groupId).get
 }
 
 object DatabaseEvolution {
+  def writeFinalForksToDisk(evolution: EvolutionForks, snapshotsOutputDir: String): IO[Unit] = {
+    evolution.finalForks.map { s =>
+      DbSnapshot.writeToDisk(s, s"$snapshotsOutputDir/${evolution.scenarioName}/final_forks/")
+    }.sequence.map(_ => ())
+  }
+
 
   def apply(name: String, snapshot: DbSnapshot): DatabaseEvolution = {
     DatabaseEvolution(name, snapshot, Seq.empty)

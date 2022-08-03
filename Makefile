@@ -11,3 +11,14 @@ full:
 	make gen && make init && make run
 
 .PHONY: gen init run
+
+
+
+
+
+
+
+
+
+
+

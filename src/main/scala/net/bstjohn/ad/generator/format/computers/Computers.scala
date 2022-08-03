@@ -7,11 +7,19 @@ import net.bstjohn.ad.generator.format.common.{Meta, MetaType}
 case class Computers(
   data: Seq[Computer],
   meta: Meta
-)
+) {
+  def updated(update: Computer => Computer): Computers = {
+    copy(
+      data = data.map(computer => update(computer))
+    )
+  }
+}
 
 object Computers {
   implicit val ComputersDecoder: Decoder[Computers] = deriveDecoder[Computers]
   implicit val ComputersEncoder: Encoder[Computers] = deriveEncoder[Computers].mapJson(_.deepDropNullValues)
+
+  val Empty = Computers(Seq.empty)
 
   def apply(computers: Seq[Computer]): Computers = {
     Computers(computers, Meta(MetaType.computers, computers.size))

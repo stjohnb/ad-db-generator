@@ -11,7 +11,7 @@ case class InvertedRelations(
 
 object InvertedRelations {
   def from(snapshot: DbSnapshot): InvertedRelations = {
-    val groupMemberships = snapshot.groups.data.map { group =>
+    val groupMemberships = snapshot.groups.toSeq.flatMap(_.data).map { group =>
       val memberGroups = group.Members.collect {
         case GroupMember(id, GroupMemberType.Group) =>
           GroupId(id)

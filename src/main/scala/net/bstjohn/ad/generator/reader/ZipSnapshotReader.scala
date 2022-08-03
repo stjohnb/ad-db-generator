@@ -1,6 +1,7 @@
 package net.bstjohn.ad.generator.reader
 
 import cats.effect.{IO, Resource}
+import io.circe.Decoder
 import io.circe.parser._
 import net.bstjohn.ad.generator.format.common.EntityId.UserId
 import net.bstjohn.ad.generator.format.computers.Computers
@@ -17,6 +18,7 @@ import org.apache.commons.io.input.BOMInputStream
 import java.nio.file.Path
 import java.util.zip.{ZipEntry, ZipFile}
 import scala.jdk.CollectionConverters._
+import scala.reflect.ClassTag
 
 object ZipSnapshotReader {
 
@@ -31,55 +33,46 @@ object ZipSnapshotReader {
 
     val epoch = entries.flatMap(e => e.getName.substring(0, 14).toLongOption).headOption.getOrElse(fail("No epoch"))
 
-    (for {
-      computersIO <- entries.find(e => e.getName.endsWith("computers.json")).map(entry =>
+    def read[T](fileSuffix: String)(implicit decoder: Decoder[T], tag: ClassTag[T]): IO[Option[T]] = {
+      entries.find(e => e.getName.endsWith(fileSuffix)).map(entry =>
         getContents(zipFile, entry).map( contents =>
-          decode[Computers](contents).getOrElse(fail("computers.json"))))
-      containersIO <- entries.find(e => e.getName.endsWith("containers.json")).map(entry =>
-        getContents(zipFile, entry).map( contents =>
-          decode[Containers](contents).getOrElse(fail("containers.json"))))
-      domainsIO <- entries.find(e => e.getName.endsWith("domains.json")).map(entry =>
-        getContents(zipFile, entry).map( contents =>
-          decode[Domains](contents).getOrElse(fail("domains.json"))))
-      gposIO <- entries.find(e => e.getName.endsWith("gpos.json")).map(entry =>
-        getContents(zipFile, entry).map( contents =>
-          decode[Gpos](contents).getOrElse(fail("gpos.json"))))
-      groupsIO <- entries.find(e => e.getName.endsWith("groups.json")).map(entry =>
-        getContents(zipFile, entry).map( contents =>
-          decode[Groups](contents).getOrElse(fail("groups.json"))))
-      ousIO <- entries.find(e => e.getName.endsWith("ous.json")).map(entry =>
-        getContents(zipFile, entry).map( contents =>
-          decode[Ous](contents).getOrElse(fail("ous.json"))))
-      usersIO <- entries.find(e => e.getName.endsWith("users.json")).map(entry =>
-        getContents(zipFile, entry).map( contents =>
-          decode[Users](contents).getOrElse(fail("users.json"))))
+          Some(decode(contents).fold(e => throw new Exception(s"${e.getMessage} - Failed to read $tag from $contents"), identity))): IO[Option[T]])
+    }.getOrElse(IO.pure(None))
+
+    val computersIO = read[Computers]("computers.json")
+    val containersIO = read[Containers]("containers.json")
+    val domainsIO = read[Domains]("domains.json")
+    val gposIO = read[Gpos]("gpos.json")
+    val groupsIO = read[Groups]("groups.json")
+    val ousIO = read[Ous]("ous.json")
+    val usersIO = read[Users]("users.json")
+
+    val lateralMovementIdsIO = entries.find(e => e.getName.endsWith("lateral_movement_ids.json")) match {
+      case Some(entry) =>
+        getContents(zipFile, entry).map(contents =>
+          decode[Option[Seq[UserId]]](contents).fold(e => throw e, identity))
+      case None =>
+        IO.pure(lateralMovementIds)
+    }
+
+    for {
+      computers <- computersIO
+      containers <- containersIO
+      domains <- domainsIO
+      gpos <- gposIO
+      groups <- groupsIO
+      ous <- ousIO
+      users <- usersIO
+      readLateralMovementIds <- lateralMovementIdsIO
     } yield {
-      val lateralMovementIdsIO = entries.find(e => e.getName.endsWith("lateral_movement_ids.json")) match {
-        case Some(entry) =>
-          getContents(zipFile, entry).map(contents =>
-            decode[Seq[UserId]](contents).getOrElse(fail("lateral_movement_ids.json")))
-        case None =>
-          IO.pure(lateralMovementIds.getOrElse(fail("No lateral movement ids")))
-      }
+      val s = DbSnapshot(
+        computers, containers, domains, gpos, groups, ous, users,
+        epoch = EpochSeconds(epoch), readLateralMovementIds
+      )
 
-      for {
-        computers <- computersIO
-        containers <- containersIO
-        domains <- domainsIO
-        gpos <- gposIO
-        groups <- groupsIO
-        ous <- ousIO
-        users <- usersIO
-        readLateralMovementIds <- lateralMovementIdsIO
-      } yield {
-        val s = DbSnapshot(
-          computers, containers, domains, gpos, groups, ous, users,
-          epoch = EpochSeconds(epoch), readLateralMovementIds
-        )
+      Some(s)
 
-        Some(s)
-      }
-    }).getOrElse(IO.pure(None))
+    }
   }
 
   private def getContents(zipFile: ZipFile, entry: ZipEntry): IO[String] = {
