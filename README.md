@@ -1,4 +1,4 @@
-# Active Directory database snapshot generator
+[comment]: <> (# Active Directory database snapshot generator)
 
 ## Dependencies
 

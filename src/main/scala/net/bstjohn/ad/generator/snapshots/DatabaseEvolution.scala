@@ -40,6 +40,12 @@ case class DatabaseEvolution(
 }
 
 object DatabaseEvolution {
+  def writeFinalForksToDisk(evolution: EvolutionForks, snapshotsOutputDir: String): IO[Unit] = {
+    evolution.finalForks.map { s =>
+      DbSnapshot.writeToDisk(s, s"$snapshotsOutputDir/${evolution.scenarioName}/final_forks/")
+    }.sequence.map(_ => ())
+  }
+
 
   def apply(name: String, snapshot: DbSnapshot): DatabaseEvolution = {
     DatabaseEvolution(name, snapshot, Seq.empty)
@@ -49,9 +55,9 @@ object DatabaseEvolution {
     snapshots.foldLeft(DatabaseEvolution(name, snapshot))((ev, s) => ev.withSnapshot(s))
   }
 
-  def writeToDisk(db: DatabaseEvolution, snapshotsOutputDir: String, index: Int): IO[Unit] = {
+  def writeToDisk(db: DatabaseEvolution, snapshotsOutputDir: String): IO[Unit] = {
     db.snapshots.map { s =>
-      DbSnapshot.writeToDisk(s, s"$snapshotsOutputDir/${db.scenarioName}/$index")
+      DbSnapshot.writeToDisk(s, s"$snapshotsOutputDir/${db.scenarioName}")
     }.sequence.map(_ => ())
   }
 }

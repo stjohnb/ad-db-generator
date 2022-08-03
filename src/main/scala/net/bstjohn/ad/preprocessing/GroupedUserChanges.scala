@@ -10,7 +10,7 @@ import java.io.FileWriter
 
 
 case class GroupedUserChanges(
-  userIds: Seq[UserId],
+  userIds: Set[UserId],
   userNames: Seq[String],
   groupsJoined: Int,
   groupsInherited: Int,
@@ -45,7 +45,7 @@ object GroupedUserChanges {
     groups: Seq[Group],
     groupsMap: Map[GroupId, Seq[GroupId]]
   ): Seq[GroupedUserChanges] = {
-    val groupedUserIds: Seq[Seq[UserId]] = userChanges.map { userChange =>
+    val groupedUserIds: Seq[Set[UserId]] = userChanges.map { userChange =>
       val loggedOnTo = computers.filter(_.allSessions.exists(s => s.UserSID == userChange.userId))
       val adminedByUsers: Seq[UserId] = loggedOnTo.flatMap(_.localAdmins.filter(_.ObjectType == LocalAdminType.User).map(_.ObjectIdentifier)).map(UserId(_))
       val adminedByGroups: Seq[GroupId] = loggedOnTo.flatMap(_.localAdmins.filter(_.ObjectType == LocalAdminType.Group).map(_.ObjectIdentifier)).map(GroupId(_))
@@ -54,7 +54,7 @@ object GroupedUserChanges {
       val adminToComputers = loggedOnTo.filter(_.localAdmins.exists(a => a.ObjectType == LocalAdminType.User && a.ObjectIdentifier == userChange.userId.value))
       val adminToUsers = adminToComputers.flatMap(_.allSessions.map(_.UserSID))
 
-      (allAdminedBy ++ adminToUsers).distinct
+      (allAdminedBy ++ adminToUsers :+ userChange.userId).toSet
     }.distinct
 
     groupedUserIds.map { userIds =>

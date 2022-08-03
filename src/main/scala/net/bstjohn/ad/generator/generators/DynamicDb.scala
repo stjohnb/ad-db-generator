@@ -8,7 +8,7 @@ import net.bstjohn.ad.generator.generators.entities.DomainGenerator.generateDoma
 import net.bstjohn.ad.generator.generators.entities.GroupGenerator.{DomainAdminsGroupName, generateGroup}
 import net.bstjohn.ad.generator.generators.entities.UserGenerator.{generateUser, generateUsers}
 import net.bstjohn.ad.generator.generators.model.EpochSeconds
-import net.bstjohn.ad.generator.snapshots.{DatabaseEvolution, DbSnapshot}
+import net.bstjohn.ad.generator.snapshots.{DatabaseEvolution, DbSnapshot, EvolutionForks}
 
 import java.util.{Calendar, GregorianCalendar}
 import scala.annotation.unused
@@ -19,8 +19,7 @@ class DynamicDb(name: String, scalingFactor: Int) {
   def scaled(range: Range): Range = Range(range.start * scalingFactor, range.end * scalingFactor)
   def sample(range: Range): Int = Random.nextInt(range.end - range.start) + range.start
 
-  def evolution: Seq[DatabaseEvolution] = {
-    println(s"DynamicDb($name, $scalingFactor)")
+  def evolutionForks: EvolutionForks = {
     val date = new GregorianCalendar(2005, Calendar.FEBRUARY, 11).getTime
     val start = EpochSeconds.fromDate(date)
     val (domainAdminsGroup, s0) = init(start, name)
@@ -66,7 +65,7 @@ class DynamicDb(name: String, scalingFactor: Int) {
       _.timestamp(s4Start.plusDays(10))
         .randomSessions())
 
-    val s5 = (1 to 10).foldRight(s4.updated(_.clearLateralMovementIds))((_, evolution) => {
+    val s5 = (1 to 2).foldRight(s4.updated(_.clearLateralMovementIds))((_, evolution) => {
       addUsers(
         helpdeskManagersGroup.ObjectIdentifier,
         helpdeskGroup.ObjectIdentifier,
@@ -96,10 +95,18 @@ class DynamicDb(name: String, scalingFactor: Int) {
          |""".stripMargin
     )
 
-    s6.users.map { user =>
-      println(s"escalatePrivileges")
-      escalatePrivileges(user.ObjectIdentifier, s6, domainAdminsGroup, domainAdminManagers, helpdeskGroup, helpdeskManagersGroup)
-    }.filter(_.latestSnapshot.lateralMovementIds.isDefined)
+    val attempts = s6.users.zipWithIndex.map { case (user, index) =>
+      escalatePrivileges(
+        user.ObjectIdentifier, s6, domainAdminsGroup, domainAdminManagers, helpdeskGroup, helpdeskManagersGroup, index)
+    }
+
+    val hacks = attempts.collect{
+      case Some(hack) =>
+        println(s"Hack involving ${hack.lateralMovementIds}")
+        hack
+    }
+
+    EvolutionForks(s6, hacks)
   }
 
   def escalatePrivileges(
@@ -108,8 +115,9 @@ class DynamicDb(name: String, scalingFactor: Int) {
     domainAdminsGroup: Group,
     domainAdminManagersGroup: Group,
     helpdeskGroup: Group,
-    helpdeskManagersGroup: Group
-  ): DatabaseEvolution = {
+    helpdeskManagersGroup: Group,
+    index: Int
+  ): Option[DbSnapshot] = {
     val userGroups = ev.groups
       .filter(_.Members.map(_.ObjectIdentifier).contains(hackedUser.value))
 
@@ -130,7 +138,7 @@ class DynamicDb(name: String, scalingFactor: Int) {
 
     val inDomainAdmins = userGroupIds.contains(domainAdminsGroup.ObjectIdentifier)
     val inDomainAdminManagersGroup = userGroupIds.contains(domainAdminManagersGroup.ObjectIdentifier)
-//    val inHelpDeskGroup = userGroupIds.contains(helpdeskGroup.ObjectIdentifier)
+    val inHelpDeskGroup = userGroupIds.contains(helpdeskGroup.ObjectIdentifier)
     val inHelpDeskManagersGroup = userGroupIds.contains(helpdeskManagersGroup.ObjectIdentifier)
 
     val canReachDomainAdmins = canReachGroups.contains(domainAdminsGroup.ObjectIdentifier)
@@ -151,17 +159,18 @@ class DynamicDb(name: String, scalingFactor: Int) {
 
     if(inDomainAdmins || canReachDomainAdmins) {
       // done. undetectable
-      println(s"already domain admin - (inDomainAdmins: $inDomainAdmins, canReachDomainAdmins: $canReachDomainAdmins)")
-      ev
+//      println(s"already domain admin - (inDomainAdmins: $inDomainAdmins, canReachDomainAdmins: $canReachDomainAdmins)")
+      Some(ev.latestSnapshot)
     } else if(inDomainAdminManagersGroup || canReachDomainAdminManagersGroup) {
       // add self to domain admins
-      println(s"Add self to domain admins - (inDomainAdminManagersGroup: $inDomainAdminManagersGroup, canReachDomainAdminManagersGroup: $canReachDomainAdminManagersGroup)")
-      ev.updated(
+//      println(s"Add self to domain admins - (inDomainAdminManagersGroup: $inDomainAdminManagersGroup, canReachDomainAdminManagersGroup: $canReachDomainAdminManagersGroup)")
+      Some(ev.updated(
         _.withUpdatedGroup(domainAdminsGroup.withGroupMember(hackedUser))
-          .withLateralMovementIds(Seq(hackedUser)))
-    } else if(inHelpDeskManagersGroup || canReachHelpDeskManagersGroup) {
+          .withLateralMovementIds(Seq(hackedUser))
+      ).latestSnapshot)
+    } else if(!inHelpDeskGroup && (inHelpDeskManagersGroup || canReachHelpDeskManagersGroup)) {
       // add self to helpdesk group
-      println(s"Add self to helpdesk - (inHelpDeskManagersGroup: $inHelpDeskManagersGroup, canReachHelpDeskManagersGroup: $canReachHelpDeskManagersGroup)")
+//      println(s"Add self to helpdesk - (inHelpDeskManagersGroup: $inHelpDeskManagersGroup, canReachHelpDeskManagersGroup: $canReachHelpDeskManagersGroup)")
       escalatePrivileges(
         hackedUser,
         ev.updated(
@@ -170,14 +179,15 @@ class DynamicDb(name: String, scalingFactor: Int) {
         domainAdminsGroup,
         domainAdminManagersGroup,
         helpdeskGroup,
-        helpdeskManagersGroup
+        helpdeskManagersGroup,
+        index
       )
     } else {
       // not hacked
-      println("No hack")
-      ev
+//      println("No hack")
+      None
     }
-  }
+  }.map(_.timestamp(ev.timestamp.plusDays(index)))
 
   private def init(start: EpochSeconds, name: String): (Group, DatabaseEvolution) = {
     val domain = generateDomain(start)
@@ -228,7 +238,7 @@ class DynamicDb(name: String, scalingFactor: Int) {
   ): DatabaseEvolution = {
     val r = Random.nextDouble()
 
-    val group = if(r < 0.05d) {
+    val groupId = if(r < 0.05d) {
       domainAdminManagers
     } else if(r < 0.1d) {
       helpdeskManagersGroup
@@ -245,10 +255,7 @@ class DynamicDb(name: String, scalingFactor: Int) {
 
     evolution.updated(
       _.withUpdatedUser(user)
-      .withUpdatedGroup(
-        evolution.groups.find(_.ObjectIdentifier == group)
-          .getOrElse(???)
-          .withGroupMember(user))
+      .withUpdatedGroup(evolution.group(groupId).withGroupMember(user))
       .timestamp(evolution.timestamp.plusMinutes(1)))
   }
 

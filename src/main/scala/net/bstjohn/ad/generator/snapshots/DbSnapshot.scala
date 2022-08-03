@@ -150,9 +150,9 @@ object DbSnapshot {
     out.write(snapshot.users.asJson.spaces2.getBytes)
     out.closeEntry()
 
-//    out.putNextEntry(new ZipEntry(s"${dateString}_lateral_movement_ids.json"))
-//    out.write(snapshot.lateralMovementIds.asJson.spaces2.getBytes)
-//    out.closeEntry()
+    out.putNextEntry(new ZipEntry(s"${dateString}_lateral_movement_ids.json"))
+    out.write(snapshot.lateralMovementIds.asJson.spaces2.getBytes)
+    out.closeEntry()
 
     out.close()
   }

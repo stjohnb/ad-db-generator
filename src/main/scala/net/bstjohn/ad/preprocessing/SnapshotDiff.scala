@@ -25,12 +25,12 @@ object SnapshotDiff {
 
     val userChanges = finalSnapshot.users.toSeq.flatMap(_.data).map(u =>
       UserChanges(u, groupDiffs, initialRelations, finalRelations, finalSnapshot.lateralMovementIds.getOrElse(Seq.empty))
-    )
+    ).filter(_.isChanged)
 
     val groupedUserChanges = GroupedUserChanges.from(
       userChanges = userChanges,
       computers = initial.computers.toSeq.flatMap(_.data) ++ finalSnapshot.computers.toSeq.flatMap(_.data),
-      groups = initial.groups.map(_.data).getOrElse(Seq.empty),
+      groups = initial.groups.map(_.data).getOrElse(???),
       groupsMap = initialRelations.groupMemberships
     ).filter(_.isChanged)
 
@@ -38,13 +38,32 @@ object SnapshotDiff {
   }
 
   def writeUserChanges(diff: SnapshotDiff, path: String): IO[Unit] = {
-    UserChanges.writeToDisk(diff.userChanges, s"$path/${diff.from.value}-${diff.to.value}-changes.csv")
+    val changes = diff.userChanges.filter(_.isChanged)
+
+    println(s"${changes.count(_.isLateralMovement)} lateral movements")
+
+    if(changes.nonEmpty) {
+      UserChanges.writeToDisk(changes, s"$path/${diff.from.value}-${diff.to.value}-changes.csv")
+    } else {
+      IO.pure(())
+    }
   }
 
   def writeAllUserChanges(diffs: Seq[SnapshotDiff], path: String): IO[Unit] = {
-    val userChanges = diffs.flatMap(_.groupedUserChanges)
-    val lateralMovements = userChanges.filter(_.isLateralMovement)
-    val nonLateralMovements = userChanges.filterNot(_.isLateralMovement)
+    val userChanges = diffs.flatMap(_.userChanges)
+    val changedUserChanges = userChanges.filter(_.isChanged)
+    val grouped = diffs.flatMap(_.groupedUserChanges)
+    val changes = grouped.filter(_.isChanged)
+    val lateralMovements = changes.filter(_.isLateralMovement)
+    val nonLateralMovements = changes.filterNot(_.isLateralMovement)
+    println(
+      s"""grouped: ${grouped.size}
+         |changes: ${changes.size}
+         |lateralMovements: ${lateralMovements.size}
+         |nonLateralMovements: ${nonLateralMovements.size}
+         |userChanges: ${userChanges.size}
+         |changedUserChanges: ${changedUserChanges.size}
+         |""".stripMargin)
     val split = nonLateralMovements.map {
       case l if Math.random() < 0.8 => Right(l)
       case l => Left(l)
